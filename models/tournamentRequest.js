@@ -1,0 +1,16 @@
+const mongoose = require('mongoose');
+
+const tournamentRequestSchema = new mongoose.Schema({
+  tournamentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tournament' },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  status: {
+    type: String,
+    enum: ['pending', 'accepted', 'rejected', 'removed'],
+    default: 'pending'
+  },
+  appliedAt: { type: Date, default: Date.now },
+  processedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  processedAt: { type: Date }
+});
+
+module.exports = mongoose.model('TournamentRequest', tournamentRequestSchema);

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trader Leveling</title>
+  <link href="/css/minimal.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://s3.tradingview.com/tv.js"></script>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="brand">
+        <i class="bi bi-graph-up-arrow"></i>
+        Trader Leveling
+      </a>
+    </div>
+    
+    <nav class="nav-menu">
+      <div class="nav-item">
+        <a href="/" class="nav-link active">
+          <i class="bi bi-house-door"></i>
+          Home
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="/dashboard" class="nav-link">
+          <i class="bi bi-grid-1x2"></i>
+          Dashboard
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="/tournament" class="nav-link">
+          <i class="bi bi-trophy"></i>
+          Tournament
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="/trade" class="nav-link">
+          <i class="bi bi-graph-up"></i>
+          Trade
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="/profile" class="nav-link">
+          <i class="bi bi-person"></i>
+          Profile
+        </a>
+      </div>
+      <% if (user.role === 'admin') { %>
+        <div class="nav-item">
+          <a href="/admin/users" class="nav-link">
+            <i class="bi bi-people"></i>
+            Users
+          </a>
+        </div>
+      <% } %>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <div class="auth-buttons">
+        <% if (loggedIn) { %>
+          <a href="/logout" class="btn btn-outline">
+            <i class="bi bi-box-arrow-right"></i>
+            Logout
+          </a>
+        <% } else { %>
+          <a href="/login" class="btn btn-primary">
+            <i class="bi bi-box-arrow-in-right"></i>
+            Sign In
+          </a>
+          <a href="/register" class="btn btn-secondary">
+            <i class="bi bi-person-plus"></i>
+            Sign Up
+          </a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+    <div class="topbar">
+      <div class="user-info">
+        <div class="user-details">
+          <h4>Home</h4>
+          <small>
+            Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
+            EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
+            Role: <%= user.role || 'guest' %>, @<%= user.name || user.email || 'Guest' %> <br />
+            <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
+          </small>
+        </div>
+      </div>
+      <img src="<%= user.profileImage || '/default-avatar.png' %>?v=<%= Date.now() %>" class="avatar" alt="Profile" />
+      <button class="btn btn-secondary btn-sm" onclick="toggleTheme()" style="margin-left:1rem;">
+        <i class="bi bi-moon"></i>
+      </button>
+    </div>
+
+    <div class="content">
+
+      <!-- User Level Info -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5><i class="bi bi-star"></i> Level & Experience</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="d-flex align-items-center mb-2">
+                <span class="badge badge-primary me-2">Level <span id="currentLevel"><%= user.level || 1 %></span></span>
+                <span class="text-muted">(<span id="levelName">Loading...</span>)</span>
+              </div>
+              <div class="progress mb-2" style="height: 8px;">
+                <div id="levelProgress" class="progress-bar" role="progressbar" style="width: 0%"></div>
+              </div>
+              <small class="text-muted">
+                EXP: <span id="currentExp"><%= user.exp || 0 %></span> / 
+                <span id="nextLevelExp">Loading...</span> 
+                (<span id="progressPercent">0</span>%)
+              </small>
+            </div>
+            <div class="col-md-6">
+              <div id="levelBenefits">
+                <small class="text-muted">
+                  <strong>Benefits:</strong> <span id="benefitsText">Loading...</span>
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Asset Selection -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="card-title">
+            <i class="bi bi-search"></i>
+            เลือกสินทรัพย์
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <!-- Stocks -->
+            <div class="mb-3">
+              <h6 class="mb-2">
+                <i class="bi bi-graph-up text-success"></i>
+                Stocks
+              </h6>
+              <div class="d-flex flex-wrap gap-1">
+                <button class="btn btn-outline btn-sm" onclick="loadAsset('AAPL')">AAPL</button>
+                <button class="btn btn-outline btn-sm" onclick="loadAsset('GOOG')">GOOG</button>
+                <button class="btn btn-outline btn-sm" onclick="loadAsset('MSFT')">MSFT</button>
+                <button class="btn btn-outline btn-sm" onclick="loadAsset('TSLA')">TSLA</button>
+                <button class="btn btn-outline btn-sm" onclick="loadAsset('AMZN')">AMZN</button>
+              </div>
+            </div>
+
+            <!-- Crypto -->
+            <div class="mb-3">
+              <h6 class="mb-2">
+                <i class="bi bi-currency-bitcoin text-warning"></i>
+                Crypto
+              </h6>
+              <div class="d-flex flex-wrap gap-1">
+                <button class="btn btn-outline btn-sm" onclick="loadAsset('BTC/USD')">BTC</button>
+                <button class="btn btn-outline btn-sm" onclick="loadAsset('ETH/USD')">ETH</button>
+                <button class="btn btn-outline btn-sm" onclick="loadAsset('BNB/USD')">BNB</button>
+                <button class="btn btn-outline btn-sm" onclick="loadAsset('SOL/USD')">SOL</button>
+              </div>
+            </div>
+
+            <!-- Commodities -->
+            <div class="mb-3">
+              <h6 class="mb-2">
+                <i class="bi bi-gem text-info"></i>
+                Commodities
+              </h6>
+              <div class="d-flex flex-wrap gap-1">
+                <button class="btn btn-outline btn-sm" onclick="loadAsset('XAU/USD')">Gold</button>
+                <button class="btn btn-outline btn-sm" onclick="loadAsset('XAG/USD')">Silver</button>
+              </div>
+            </div>
+
+            <!-- Forex -->
+            <div class="mb-3">
+              <h6 class="mb-2">
+                <i class="bi bi-currency-exchange text-primary"></i>
+                Forex
+              </h6>
+              <div class="d-flex flex-wrap gap-1">
+                <button class="btn btn-outline btn-sm" onclick="loadAsset('EUR/USD')">EUR/USD</button>
+                <button class="btn btn-outline btn-sm" onclick="loadAsset('USD/JPY')">USD/JPY</button>
+                <button class="btn btn-outline btn-sm" onclick="loadAsset('GBP/USD')">GBP/USD</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Custom Symbol Input -->
+          <div class="mb-3">
+            <div class="input-group">
+              <input type="text" id="customSymbol" class="form-control" placeholder="ใส่สัญลักษณ์เอง เช่น AAPL, BTC/USD, EUR/USD" />
+              <button class="btn btn-primary" onclick="loadCustomAsset()">
+                <i class="bi bi-search"></i>
+                ค้นหา
+              </button>
+            </div>
+            <small class="text-muted">
+              <i class="bi bi-lightbulb"></i>
+              ตัวอย่าง: AAPL, GOOGL, BTC/USD, ETH/USD, EUR/USD, XAU/USD
+            </small>
+          </div>
+
+          <div class="alert alert-info">
+            <strong>ราคาปัจจุบัน:</strong> 
+            <span id="current-symbol">-</span> | 
+            <span id="current-price" class="badge badge-primary">-</span>
+            <small class="d-block mt-1 text-muted">
+              <i class="bi bi-info-circle"></i>
+              เลือกสัญลักษณ์ด้านบนเพื่อดูราคาและกราฟ
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trading Chart -->
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="card-title">
+            <i class="bi bi-graph-up-arrow"></i>
+            กราฟราคา
+          </h5>
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary btn-sm" onclick="toggleFullscreen()">
+              <i class="bi bi-arrows-fullscreen"></i>
+            </button>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <div id="dynamic-graph" style="height: 500px;"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/index.js"></script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trader Leveling - Edit Profile</title>
+    <link href="/css/minimal.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="brand">
+          <i class="bi bi-graph-up-arrow"></i>
+          Trader Leveling
+        </a>
+      </div>
+      <nav class="nav-menu">
+        <div class="nav-item">
+          <a href="/" class="nav-link">
+            <i class="bi bi-house-door"></i>
+            Home
+          </a>
+        </div>
+        <div class="nav-item">
+          <a href="/dashboard" class="nav-link">
+            <i class="bi bi-grid-1x2"></i>
+            Dashboard
+          </a>
+        </div>
+              <div class="nav-item">
+        <a href="/tournament" class="nav-link">
+          <i class="bi bi-trophy"></i>
+          Tournament
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="/trade" class="nav-link">
+          <i class="bi bi-graph-up"></i>
+          Trade
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="/profile" class="nav-link active">
+          <i class="bi bi-person"></i>
+          Profile
+        </a>
+      </div>
+      <% if (user.role === 'admin') { %>
+        <div class="nav-item">
+          <a href="/admin/users" class="nav-link">
+            <i class="bi bi-people"></i>
+            Users
+          </a>
+        </div>
+      <% } %>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="auth-buttons">
+          <% if (loggedIn) { %>
+            <a href="/logout" class="btn btn-outline">
+              <i class="bi bi-box-arrow-right"></i>
+              Logout
+            </a>
+          <% } else { %>
+            <a href="/login" class="btn btn-primary">
+              <i class="bi bi-box-arrow-in-right"></i>
+              Sign In
+            </a>
+            <a href="/register" class="btn btn-secondary">
+              <i class="bi bi-person-plus"></i>
+              Sign Up
+            </a>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+      <div class="topbar">
+        <div class="user-info">
+          <div class="user-details">
+            <h4>Profile</h4>
+            <small>
+              Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
+              EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
+              Role: <span class="badge badge-<%= user.role === 'admin' ? 'danger' : user.role === 'trader' ? 'success' : 'secondary' %>"><%= user.role || 'guest' %></span> | 
+              <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
+            </small>
+          </div>
+        </div>
+        <img src="<%= user.profileImage || '/default-avatar.png' %>?v=<%= Date.now() %>" class="avatar" alt="Profile" />
+        <button class="btn btn-secondary btn-sm" onclick="toggleTheme()" style="margin-left:1rem;">
+          <i class="bi bi-moon"></i>
+        </button>
+      </div>
+      <div class="content">
+        <!-- User Level Info -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5><i class="bi bi-star"></i> Level & Experience</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="d-flex align-items-center mb-2">
+                  <span class="badge badge-primary me-2">Level <span id="currentLevel"><%= user.level || 1 %></span></span>
+                  <span class="text-muted">(<span id="levelName">Loading...</span>)</span>
+                </div>
+                <div class="progress mb-2" style="height: 8px;">
+                  <div id="levelProgress" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                </div>
+                <small class="text-muted">
+                  EXP: <span id="currentExp"><%= user.exp || 0 %></span> / 
+                  <span id="nextLevelExp">Loading...</span> 
+                  (<span id="progressPercent">0</span>%)
+                </small>
+              </div>
+              <div class="col-md-6">
+                <div id="levelBenefits">
+                  <small class="text-muted">
+                    <strong>Benefits:</strong> <span id="benefitsText">Loading...</span>
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title"><i class="bi bi-person"></i> ข้อมูลโปรไฟล์</h5>
+            <div class="mt-2">
+              <span class="badge badge-<%= user.role === 'admin' ? 'danger' : user.role === 'trader' ? 'success' : 'secondary' %>">
+                <i class="bi bi-<%= user.role === 'admin' ? 'shield' : user.role === 'trader' ? 'person-check' : 'person' %>"></i>
+                <%= user.role || 'guest' %>
+              </span>
+            </div>
+          </div>
+          <div class="card-body">
+            <form action="/profile/update" method="POST" enctype="multipart/form-data">
+              <div class="form-group">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" value="<%= user.email %>" readonly />
+              </div>
+              <div class="form-group">
+                <label for="age" class="form-label">Age</label>
+                <% let age = user.age || ''; if (user.birthdate) { const today = new Date(); const birthDate = new Date(user.birthdate); age = today.getFullYear() - birthDate.getFullYear(); const m = today.getMonth() - birthDate.getMonth(); if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) { age--; } } %>
+                <input type="number" class="form-control" id="age" name="age" value="<%= user.age || '' %>" min="0" max="150" />
+              </div>
+              <div class="form-group">
+                <label for="country" class="form-label">Country</label>
+                <select class="form-control" id="country" name="country">
+                  <option value="Thailand" <%= user.country === 'Thailand' ? 'selected' : '' %>>Thailand</option>
+                  <option value="United States" <%= user.country === 'United States' ? 'selected' : '' %>>United States</option>
+                  <option value="Japan" <%= user.country === 'Japan' ? 'selected' : '' %>>Japan</option>
+                  <option value="Germany" <%= user.country === 'Germany' ? 'selected' : '' %>>Germany</option>
+                  <option value="Other" <%= user.country === 'Other' ? 'selected' : '' %>>Other</option>
+                </select>
+              </div>
+              
+              <!-- Display current role and level (read-only) -->
+              <div class="form-group">
+                <label class="form-label">Current Role</label>
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="bi bi-<%= user.role === 'admin' ? 'shield-fill' : user.role === 'trader' ? 'person-check-fill' : 'person-fill' %>"></i>
+                  </span>
+                  <input type="text" class="form-control" value="<%= user.role || 'guest' %>" readonly />
+                  <span class="input-group-text">
+                    <span class="badge badge-<%= user.role === 'admin' ? 'danger' : user.role === 'trader' ? 'success' : 'secondary' %>">
+                      <%= user.role === 'admin' ? 'Administrator' : user.role === 'trader' ? 'Trader' : 'Guest' %>
+                    </span>
+                  </span>
+                </div>
+                <small class="text-muted">
+                  <i class="bi bi-info-circle"></i>
+                  Role cannot be changed from profile page. Contact administrator for role changes.
+                </small>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Experience Points</label>
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="bi bi-lightning-fill text-warning"></i>
+                  </span>
+                  <input type="text" class="form-control" value="<%= user.exp || 0 %>" readonly />
+                  <span class="input-group-text">
+                    <span class="badge badge-warning">
+                      EXP
+                    </span>
+                  </span>
+                </div>
+                <small class="text-muted">
+                  <i class="bi bi-info-circle"></i>
+                  Experience points are earned through trading activities
+                </small>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Current Level</label>
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="bi bi-star-fill text-warning"></i>
+                  </span>
+                  <input type="text" class="form-control" value="<%= user.level || 1 %>" readonly />
+                  <span class="input-group-text">
+                    <span class="badge badge-primary">
+                      Level <%= user.level || 1 %>
+                    </span>
+                  </span>
+                </div>
+                <small class="text-muted">
+                  <i class="bi bi-info-circle"></i>
+                  Level is determined by your experience points. Current EXP: <%= user.exp || 0 %>
+                </small>
+              </div>
+              
+              <div class="form-group">
+                <label for="profileImage" class="form-label">Profile Image</label>
+                <input type="file" class="form-control" id="profileImage" name="profileImage" />
+              </div>
+              <button type="submit" class="btn btn-primary w-100 mt-3">
+                <i class="bi bi-save"></i> Update Profile
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="/js/profile.js"></script>
+  </body>
+</html>

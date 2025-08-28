@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trade · Trader Leveling</title>
+  <link href="/css/minimal.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Removed TradingView widget, use lightweight-charts only -->
+  <style>
+    .trade-item, .position-item {
+      padding: 0.75rem;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 0.5rem;
+    }
+    .trade-item:last-child, .position-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+    }
+    .badge-success {
+      background-color: #10b981;
+      color: white;
+    }
+    .badge-danger {
+      background-color: #ef4444;
+      color: white;
+    }
+    .badge-primary {
+      background-color: #3b82f6;
+      color: white;
+    }
+    .level-up-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000;
+      animation: slideIn 0.5s ease-out;
+    }
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    .progress-bar {
+      background-color: #3b82f6;
+      transition: width 0.3s ease;
+    }
+  </style>
+
+
+  <style>
+    .trade-item, .position-item {
+      padding: 0.75rem;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 0.5rem;
+    }
+    .trade-item:last-child, .position-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+    }
+    .badge-success {
+      background-color: #10b981;
+      color: white;
+    }
+    .badge-danger {
+      background-color: #ef4444;
+      color: white;
+    }
+    .badge-primary {
+      background-color: #3b82f6;
+      color: white;
+    }
+    .level-up-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000;
+      animation: slideIn 0.5s ease-out;
+    }
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    .progress-bar {
+      background-color: #3b82f6;
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body data-initial-symbol="<%= tournament ? tournament.assets[0] : '' %>" data-has-tournament="<%= tournament ? 'true' : 'false' %>" data-tournament-id="<%= tournament ? tournament._id : '' %>">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="brand">
+        <i class="bi bi-graph-up-arrow"></i>
+        Trader Leveling
+      </a>
+    </div>
+    <nav class="nav-menu">
+      <div class="nav-item">
+        <a href="/" class="nav-link">
+          <i class="bi bi-house-door"></i>
+          Home
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="/dashboard" class="nav-link">
+          <i class="bi bi-grid-1x2"></i>
+          Dashboard
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="/tournament" class="nav-link">
+          <i class="bi bi-trophy"></i>
+          Tournament
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="/trade" class="nav-link active">
+          <i class="bi bi-graph-up"></i>
+          Trade
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="/profile" class="nav-link">
+          <i class="bi bi-person"></i>
+          Profile
+        </a>
+      </div>
+      <% if (user.role === 'admin') { %>
+        <div class="nav-item">
+          <a href="/admin/users" class="nav-link">
+            <i class="bi bi-people"></i>
+            Users
+          </a>
+        </div>
+      <% } %>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="auth-buttons">
+        <% if (loggedIn) { %>
+          <a href="/logout" class="btn btn-outline">
+            <i class="bi bi-box-arrow-right"></i>
+            Logout
+          </a>
+        <% } else { %>
+          <a href="/login" class="btn btn-primary">
+            <i class="bi bi-box-arrow-in-right"></i>
+            Sign In
+          </a>
+          <a href="/register" class="btn btn-secondary">
+            <i class="bi bi-person-plus"></i>
+            Sign Up
+          </a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+    <div class="topbar">
+      <div class="user-info">
+        <div class="user-details">
+          <h4>Trade</h4>
+          <small>
+            Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
+            EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
+            Role: <%= user.role || 'guest' %>, @<%= user.name || user.email || 'Guest' %> <br />
+            <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
+          </small>
+        </div>
+      </div>
+      <img src="<%= user.profileImage + '?v=' + Date.now() %>" class="avatar" alt="Profile" />
+      <button class="btn btn-secondary btn-sm" onclick="toggleTheme()" style="margin-left:1rem;">
+        <i class="bi bi-moon"></i>
+      </button>
+    </div>
+    <div class="content">
+      <% if (error) { %>
+        <div class="alert alert-warning">
+          <i class="bi bi-exclamation-triangle"></i>
+          <%= error %>
+          <br><br>
+          <a href="/tournament" class="btn btn-primary">
+            <i class="bi bi-trophy"></i>
+            Go to Tournament Page
+          </a>
+        </div>
+      <% } else if (tournament) { %>
+        <!-- Tournament Info -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5><i class="bi bi-trophy"></i> Tournament: <%= tournament.name %></h5>
+            <small class="text-muted">Balance: $<%= userBalance %> | Assets: <%= tournament.assets.join(', ') %></small>
+          </div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <strong>Status:</strong> 
+                <% if (tournamentStatus === 'RUNNING') { %>
+                  <span class="badge badge-success">RUNNING</span>
+                <% } else if (tournamentStatus === 'COMPLETE') { %>
+                  <span class="badge badge-secondary">COMPLETE</span>
+                <% } else { %>
+                  <span class="badge badge-primary">REGISTRATION</span>
+                <% } %>
+              </div>
+              <div>
+                <strong>Time Left:</strong> <span id="timeLeft">Loading...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Level Info -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5><i class="bi bi-star"></i> Level & Experience</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="d-flex align-items-center mb-2">
+                  <span class="badge badge-primary me-2">Level <span id="currentLevel"><%= user.level || 1 %></span></span>
+                  <span class="text-muted">(<span id="levelName">Loading...</span>)</span>
+                </div>
+                <div class="progress mb-2" style="height: 8px;">
+                  <div id="levelProgress" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                </div>
+                <small class="text-muted">
+                  EXP: <span id="currentExp"><%= user.exp || 0 %></span> / 
+                  <span id="nextLevelExp">Loading...</span> 
+                  (<span id="progressPercent">0</span>%)
+                </small>
+              </div>
+              <div class="col-md-6">
+                <div id="levelBenefits">
+                  <small class="text-muted">
+                    <strong>Benefits:</strong> <span id="benefitsText">Loading...</span>
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trading Interface -->
+        <div class="row">
+          <!-- Chart Section (TradingView Widget) -->
+          <div class="col-8">
+            <div class="card mb-4">
+              <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h5><i class="bi bi-graph-up"></i> Trading Chart</h5>
+                  <div class="d-flex gap-2">
+                    <div class="symbol-selector">
+                      <select id="symbolSelect" class="form-control" onchange="changeSymbol()">
+                        <% tournament.assets.forEach(function(asset) { %>
+                          <option value="<%= asset %>"><%= asset %></option>
+                        <% }); %>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div id="lightweightChart" style="height: 500px; width: 100%; position: relative;"></div>
+                <div class="d-flex justify-content-center mt-2">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trading Panel -->
+          <div class="col-4">
+            <div class="card mb-4">
+              <div class="card-header">
+                <h5><i class="bi bi-currency-exchange"></i> Trade Panel</h5>
+              </div>
+              <div class="card-body">
+                <form id="tradeForm">
+                  <input type="hidden" name="tournamentId" value="<%= tournament._id %>">
+                  
+                  <!-- Action Selection -->
+                  <div class="form-group">
+                    <label>Action</label>
+                    <div class="d-flex gap-2">
+                      <button type="button" class="btn btn-success w-50" onclick="setAction('buy')" id="buyBtn">
+                        <i class="bi bi-arrow-up"></i> BUY
+                      </button>
+                      <button type="button" class="btn btn-danger w-50" onclick="setAction('sell')" id="sellBtn">
+                        <i class="bi bi-arrow-down"></i> SELL
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Type Selection -->
+                  <div class="form-group">
+                    <label for="orderType">Order Type</label>
+                    <select id="orderType" name="type" class="form-control" onchange="onOrderTypeChange()">
+                      <option value="market">Market</option>
+                      <option value="limit">Limit</option>
+                      <option value="stop">Stop</option>
+                    </select>
+                  </div>
+
+                  <!-- Stop Price (เฉพาะ type=stop) -->
+                  <div class="form-group" id="stopPriceGroup" style="display:none;">
+                    <label for="stopPrice">Stop Price</label>
+                    <input type="number" id="stopPrice" name="stopPrice" class="form-control" step="0.00001" placeholder="Stop Price">
+                  </div>
+
+                  <!-- Lot Size -->
+                  <div class="form-group">
+                    <label for="lotSize">Lot Size</label>
+                    <input type="number" id="lotSize" name="lot" class="form-control" value="0.01" min="0.01" max="10" step="0.01" required>
+                  </div>
+
+                  <!-- Entry Price -->
+                  <div class="form-group">
+                    <label for="entryPrice">Entry Price (Optional)</label>
+                    <input type="number" id="entryPrice" name="entryPrice" class="form-control" step="0.00001" placeholder="Market Price">
+                  </div>
+
+                  <!-- Stop Loss -->
+                  <div class="form-group">
+                    <label for="stopLoss">Stop Loss (Optional)</label>
+                    <input type="number" id="stopLoss" name="stopLoss" class="form-control" step="0.00001" placeholder="Stop Loss Price">
+                  </div>
+
+                  <!-- Take Profit -->
+                  <div class="form-group">
+                    <label for="takeProfit">Take Profit (Optional)</label>
+                    <input type="number" id="takeProfit" name="takeProfit" class="form-control" step="0.00001" placeholder="Take Profit Price">
+                  </div>
+
+                  <!-- Submit Button -->
+                  <% if (tournamentStatus === 'RUNNING') { %>
+                    <button type="submit" class="btn btn-primary w-100" id="submitBtn">
+                      <i class="bi bi-send"></i> Place Order
+                    </button>
+                  <% } else if (tournamentStatus === 'COMPLETE') { %>
+                    <div class="alert alert-info text-center">
+                      <i class="bi bi-info-circle"></i>
+                      <strong>Tournament Completed</strong><br>
+                      <small>Trading is no longer available for this tournament.</small>
+                    </div>
+                  <% } else { %>
+                    <div class="alert alert-warning text-center">
+                      <i class="bi bi-clock"></i>
+                      <strong>Tournament Not Started</strong><br>
+                      <small>Trading will be available when the tournament starts.</small>
+                    </div>
+                  <% } %>
+                </form>
+              </div>
+            </div>
+
+            <!-- Recent Trades -->
+            <div class="card">
+              <div class="card-header">
+                <h5><i class="bi bi-clock-history"></i> Recent Trades</h5>
+              </div>
+              <div class="card-body">
+                <div id="recentTrades">
+                  <p class="text-muted text-center">Loading recent trades...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Open Positions -->
+        <div class="card">
+          <div class="card-header">
+            <h5><i class="bi bi-list-ul"></i> Open Positions</h5>
+          </div>
+          <div class="card-body">
+            <div id="openPositions">
+              <p class="text-muted text-center">Loading open positions...</p>
+            </div>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Modal: Close Position (Take partials) -->
+  <div id="closePositionModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#222; color:#fff; padding:2rem; border-radius:12px; min-width:320px; max-width:90vw; margin:auto; box-shadow:0 8px 32px rgba(0,0,0,0.25);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <h5 style="margin:0;">Take partials</h5>
+        <button onclick="closeCloseModal()" style="background:none; border:none; color:#fff; font-size:1.5rem;">&times;</button>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label><input type="radio" name="closeMode" checked> Use left amount on Position</label>
+        <label style="margin-left:1rem;"><input type="radio" name="closeMode"> Use original Position</label>
+      </div>
+      <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+        <button class="btn btn-outline-secondary btn-sm" onclick="setClosePercent(25)">25%</button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="setClosePercent(50)">50%</button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="setClosePercent(75)">75%</button>
+        <button class="btn btn-primary btn-sm" onclick="setClosePercent(100)" id="closePercent100">100%</button>
+      </div>
+      <div style="display:flex; gap:1rem; margin-bottom:1rem;">
+        <div style="flex:1;">
+          <label>Percentage to close</label>
+          <input type="number" id="closePercent" value="100" min="1" max="100" class="form-control" oninput="updateCloseAmount()">
+        </div>
+        <div style="flex:1;">
+          <label>Amount to close</label>
+          <input type="number" id="closeAmount" value="0.01" min="0.01" step="0.01" class="form-control" oninput="updateClosePercent()">
+        </div>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <span>Current position size: <span id="closeCurrentSize">0.01 Coins</span></span>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <span>Realized PnL: <span id="closePnl">$0.00</span></span>
+      </div>
+      <div style="display:flex; gap:1rem; justify-content:flex-end;">
+        <button class="btn btn-outline-secondary" onclick="closeCloseModal()">Discard</button>
+        <button class="btn btn-primary" onclick="saveClosePosition()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Edit SL/TP -->
+  <div id="editPositionModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:var(--bg-primary); color:var(--text-primary); padding:2rem; border-radius:12px; min-width:320px; max-width:90vw; margin:auto; box-shadow:0 8px 32px rgba(0,0,0,0.25);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <h5 style="margin:0; color:var(--primary-color);">Edit Stop Loss / Take Profit</h5>
+        <button onclick="closeEditModal()" style="background:none; border:none; color:var(--text-primary); font-size:1.5rem;">&times;</button>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label>Stop Loss</label>
+        <input type="number" id="editStopLoss" class="form-control" step="0.00001" placeholder="Stop Loss">
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label>Take Profit</label>
+        <input type="number" id="editTakeProfit" class="form-control" step="0.00001" placeholder="Take Profit">
+      </div>
+      <div style="display:flex; gap:1rem; justify-content:flex-end;">
+        <button class="btn btn-secondary" onclick="closeEditModal()">Discard</button>
+        <button class="btn btn-primary" onclick="saveEditPosition()">Save</button>
+      </div>
+      <input type="hidden" id="editPositionId">
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script> <!-- Add socket.io client library -->
+  <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+  <script>
+
+
+    let currentAction = 'buy';
+    let currentSymbol = '';
+    let chart; // Lightweight Charts chart instance
+    let candlestickSeries; // Candlestick series for Lightweight Charts
+    let editPositionId = null;
+    let closePositionId = null;
+    let closeCurrentLot = 0.01;
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const themeButton = document.querySelector('[onclick="toggleTheme()"] i');
+      if (html.getAttribute('data-theme') === 'light') {
+        html.setAttribute('data-theme', 'dark');
+        themeButton.className = "bi bi-sun";
+      } else {
+        html.setAttribute('data-theme', 'light');
+        themeButton.className = "bi bi-moon";
+      }
+      if (currentSymbol) {
+        initChart();
+      }
+    }
+
+    function setAction(action) {
+      currentAction = action;
+      document.getElementById('buyBtn').classList.toggle('btn-success', action === 'buy');
+      document.getElementById('buyBtn').classList.toggle('btn-outline', action !== 'buy');
+      document.getElementById('sellBtn').classList.toggle('btn-danger', action === 'sell');
+      document.getElementById('sellBtn').classList.toggle('btn-outline', action !== 'sell');
+    }
+
+    function changeSymbol() {
+      currentSymbol = document.getElementById('symbolSelect').value;
+      initChart();
+    }
+
+    // ฟังก์ชันโหลดข้อมูล OHLC จาก MT5 API
+    async function fetchOHLC(symbol) {
+      try {
+        // แปลง symbol เช่น EUR/USD -> EURUSD
+        const cleanSymbol = symbol.replace(/\//g, '');
+        const res = await fetch(`/api/mt5-data?symbol=${encodeURIComponent(cleanSymbol)}`);
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          return data.map(bar => ({
+            time: bar.time,
+            open: bar.open,
+            high: bar.high,
+            low: bar.low,
+            close: bar.close,
+            volume: bar.tick_volume
+          })).sort((a, b) => a.time - b.time);
+        }
+        return [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    // สร้างกราฟ lightweight-charts
+    async function initChart() {
+      const container = document.getElementById('lightweightChart');
+      if (!container || !currentSymbol) return;
+      container.innerHTML = '';
+      // ลบ chart เดิมถ้ามี
+      if (chart && chart.remove) chart.remove();
+      chart = LightweightCharts.createChart(container, {
+        width: container.offsetWidth,
+        height: container.offsetHeight,
+        layout: {
+          background: { color: getComputedStyle(document.body).backgroundColor },
+          textColor: getComputedStyle(document.body).color
+        },
+        grid: { vertLines: { color: '#eee' }, horzLines: { color: '#eee' } },
+        timeScale: { timeVisible: true, secondsVisible: false }
+      });
+      candlestickSeries = chart.addCandlestickSeries();
+      // โหลดข้อมูลจาก MT5 API
+      const ohlc = await fetchOHLC(currentSymbol);
+      if (ohlc.length > 0) {
+        candlestickSeries.setData(ohlc.map(bar => ({
+          time: bar.time,
+          open: bar.open,
+          high: bar.high,
+          low: bar.low,
+          close: bar.close
+        })));
+      }
+    }
+
+    // ...existing code...
+
+    // เพิ่มฟังก์ชัน loadRecentTrades กลับมา
+    async function loadRecentTrades() {
+      try {
+        const tournamentId = '<%= tournament ? tournament._id : "" %>';
+        if (!tournamentId) return;
+        const response = await fetch(`/api/trade/recent?tournamentId=${tournamentId}`);
+        const data = await response.json();
+        const recentTradesDiv = document.getElementById('recentTrades');
+        if (data.success && data.trades && data.trades.length > 0) {
+          const tradesHtml = data.trades.map(trade => `
+            <div class="trade-item">
+              <div class="d-flex justify-content-between">
+                <span class="badge badge-${trade.action === 'buy' ? 'success' : 'danger'}">${trade.action.toUpperCase()}</span>
+                <small>${new Date(trade.createdAt).toLocaleTimeString()}</small>
+              </div>
+              <div>Lot: ${trade.lot} | Score: ${trade.score || 0}</div>
+            </div>
+          `).join('');
+          recentTradesDiv.innerHTML = tradesHtml;
+        } else {
+          recentTradesDiv.innerHTML = '<p class="text-muted text-center">No recent trades</p>';
+        }
+      } catch (error) {
+        document.getElementById('recentTrades').innerHTML = '<p class="text-muted text-center">Error loading trades</p>';
+      }
+    }
+
+    async function loadOpenPositions() {
+      try {
+        const tournamentId = '<%= tournament ? tournament._id : "" %>';
+        if (!tournamentId) return;
+        
+        const response = await fetch(`/api/trade/positions?tournamentId=${tournamentId}`);
+        const data = await response.json();
+        
+        const openPositionsDiv = document.getElementById('openPositions');
+        if (data.success && data.positions && data.positions.length > 0) {
+          const positionsHtml = data.positions.map(position => {
+            let entryDisplay = position.entryPrice !== undefined && position.entryPrice !== null ? position.entryPrice : 'Market';
+            return `
+            <div class="position-item">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="badge badge-${position.action === 'buy' ? 'success' : 'danger'}">${position.action.toUpperCase()}</span>
+                <small>${new Date(position.createdAt).toLocaleTimeString()}</small>
+              </div>
+              <div>Lot: ${position.lot} | Entry: ${entryDisplay}
+                ${position.type === 'stop' && position.status === 'pending' ? '<span class=\'badge badge-warning\'>Pending Stop</span>' : ''}
+                ${position.type === 'stop' && position.status === 'active' ? '<span class=\'badge badge-success\'>Stop Triggered</span>' : ''}
+              </div>
+              <div class="d-flex gap-2 mt-2">
+                <button class="btn btn-theme-edit btn-sm" onclick="showEditModal('${position._id}', ${position.lot}, ${position.stopLoss || 'null'}, ${position.takeProfit || 'null'})">Edit</button>
+                <button class="btn btn-theme-close btn-sm" onclick="showCloseModal('${position._id}', ${position.lot})">Close</button>
+              </div>
+            </div>
+          `;
+          }).join('');
+          openPositionsDiv.innerHTML = positionsHtml;
+        } else {
+          openPositionsDiv.innerHTML = '<p class="text-muted text-center">No open positions</p>';
+        }
+      } catch (error) {
+        console.error('Error loading positions:', error);
+        document.getElementById('openPositions').innerHTML = '<p class="text-muted text-center">Error loading positions</p>';
+      }
+    }
+
+    async function loadUserLevelInfo() {
+      try {
+        const response = await fetch('/api/user-level');
+        const data = await response.json();
+        
+        if (data.success) {
+          const levelInfo = data.levelInfo;
+          document.getElementById('currentLevel').textContent = levelInfo.level;
+          document.getElementById('userLevel').textContent = levelInfo.level;
+          document.getElementById('currentExp').textContent = levelInfo.exp;
+          document.getElementById('userExp').textContent = levelInfo.exp;
+          document.getElementById('levelName').textContent = levelInfo.levelInfo.name;
+          
+          const progressBar = document.getElementById('levelProgress');
+          const progressPercent = document.getElementById('progressPercent');
+          progressBar.style.width = levelInfo.progressToNextLevel + '%';
+          progressPercent.textContent = Math.round(levelInfo.progressToNextLevel);
+          
+          if (levelInfo.isMaxLevel) {
+            document.getElementById('nextLevelExp').textContent = 'MAX LEVEL';
+          } else {
+            document.getElementById('nextLevelExp').textContent = levelInfo.nextLevelExp;
+          }
+          
+          document.getElementById('benefitsText').textContent = levelInfo.levelInfo.benefits;
+        }
+      } catch (error) {
+        console.error('Error loading user level:', error);
+      }
+    }
+
+    function updateTimeLeft() {
+      const tournamentEnd = new Date('<%= tournament ? tournament.end : "" %>');
+      const now = new Date();
+      const timeLeftElement = document.getElementById('timeLeft');
+      
+      if (tournamentEnd && tournamentEnd > now) {
+        const timeDiff = tournamentEnd - now;
+        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+        
+        let timeString = '';
+        if (days > 0) timeString += days + 'd ';
+        if (hours > 0) timeString += hours + 'h ';
+        if (minutes > 0) timeString += minutes + 'm ';
+        timeString += seconds + 's';
+        
+        timeLeftElement.textContent = timeString;
+      } else {
+        timeLeftElement.textContent = 'Tournament Ended';
+      }
+    }
+
+    function toggleChartFullscreen() {
+      const tradingChart = document.getElementById('tradingChart');
+      if (!tradingChart) return;
+      if (!document.fullscreenElement) {
+        if (tradingChart.requestFullscreen) {
+          tradingChart.requestFullscreen();
+        } else if (tradingChart.mozRequestFullScreen) {
+          tradingChart.mozRequestFullScreen();
+        } else if (tradingChart.webkitRequestFullscreen) {
+          tradingChart.webkitRequestFullscreen();
+        } else if (tradingChart.msRequestFullscreen) {
+          tradingChart.msRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen();
+        } else if (document.webkitCancelFullScreen) {
+          document.webkitCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+      }
+    }
+
+    function showEditModal(positionId, lot, stopLoss, takeProfit) {
+      editPositionId = positionId;
+      document.getElementById('editPositionId').value = positionId;
+      document.getElementById('editStopLoss').value = stopLoss && stopLoss !== 'null' ? stopLoss : '';
+      document.getElementById('editTakeProfit').value = takeProfit && takeProfit !== 'null' ? takeProfit : '';
+      document.getElementById('editPositionModal').style.display = 'flex';
+    }
+
+    function closeEditModal() {
+      document.getElementById('editPositionModal').style.display = 'none';
+    }
+
+    async function saveEditPosition() {
+      const positionId = document.getElementById('editPositionId').value;
+      const stopLoss = document.getElementById('editStopLoss').value;
+      const takeProfit = document.getElementById('editTakeProfit').value;
+      // ส่งข้อมูลไป backend (API ของเราเอง)
+      try {
+        await fetch('/api/trade/edit-position', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ positionId, stopLoss, takeProfit })
+        });
+        closeEditModal();
+        loadOpenPositions();
+      } catch (e) {
+        alert('Error saving position');
+      }
+    }
+
+    function showCloseModal(positionId, lot) {
+      closePositionId = positionId;
+      closeCurrentLot = lot;
+      document.getElementById('closePercent').value = 100;
+      document.getElementById('closeAmount').value = lot;
+      document.getElementById('closeCurrentSize').textContent = lot + ' Coins';
+      document.getElementById('closePnl').textContent = '$0.00';
+      document.getElementById('closePositionModal').style.display = 'flex';
+    }
+
+    function closeCloseModal() {
+      document.getElementById('closePositionModal').style.display = 'none';
+    }
+
+    function setClosePercent(percent) {
+      document.getElementById('closePercent').value = percent;
+      updateCloseAmount();
+    }
+
+    function updateCloseAmount() {
+      const percent = parseFloat(document.getElementById('closePercent').value);
+      const amount = (closeCurrentLot * percent / 100).toFixed(2);
+      document.getElementById('closeAmount').value = amount;
+      // (ถ้ามีสูตรคำนวณ PnL จริง ใส่ที่นี่)
+    }
+
+    function updateClosePercent() {
+      const amount = parseFloat(document.getElementById('closeAmount').value);
+      const percent = Math.min(100, Math.max(1, (amount / closeCurrentLot) * 100));
+      document.getElementById('closePercent').value = percent.toFixed(0);
+      // (ถ้ามีสูตรคำนวณ PnL จริง ใส่ที่นี่)
+    }
+
+    async function saveClosePosition() {
+      const lotToClose = parseFloat(document.getElementById('closeAmount').value);
+      if (!closePositionId || !lotToClose || lotToClose <= 0) return alert('Invalid input');
+      try {
+        // Get close price from chart (if available)
+        let closePrice = 0;
+        if (typeof getLastClosePriceOnChart === 'function') {
+          closePrice = getLastClosePriceOnChart();
+        }
+        console.log('[CLOSE] Sending closePrice from chart:', closePrice);
+        await fetch('/api/trade/close-position', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ positionId: closePositionId, lotToClose, closePrice })
+        });
+        closeCloseModal();
+        loadOpenPositions();
+        loadRecentTrades();
+      } catch (e) {
+        alert('Error closing position');
+      }
+    }
+
+    function onOrderTypeChange() {
+      const type = document.getElementById('orderType').value;
+      const stopPriceGroup = document.getElementById('stopPriceGroup');
+      if (type === 'stop') {
+        stopPriceGroup.style.display = '';
+      } else {
+        stopPriceGroup.style.display = 'none';
+        document.getElementById('stopPrice').value = '';
+      }
+    }
+
+    async function fetchCurrentPrice(symbol) {
+      const res = await fetch(`/api/price?symbol=${encodeURIComponent(symbol)}`);
+      const data = await res.json();
+      if (data && data.price) return data.price;
+      return null;
+    }
+
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize chart
+      currentSymbol = document.getElementById('symbolSelect').value;
+      if (currentSymbol) {
+        initChart();
+      }
+      
+      // Set initial action
+      setAction('buy');
+      
+      // Load data
+      loadRecentTrades();
+      loadOpenPositions();
+      loadUserLevelInfo();
+      
+      // Update time left
+      updateTimeLeft();
+      setInterval(updateTimeLeft, 1000);
+      
+      // Refresh data every 30 seconds
+      setInterval(() => {
+        loadRecentTrades();
+        loadOpenPositions();
+      }, 30000);
+      
+      // Handle form submission
+      const tradeForm = document.getElementById('tradeForm');
+      if (tradeForm) {
+        tradeForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          var formData = new FormData(this);
+          // เพิ่ม entryPrice จากราคาปัจจุบัน
+          var symbolSelect = document.getElementById('symbolSelect');
+          if (symbolSelect && symbolSelect.value) {
+            const price = await fetchCurrentPrice(symbolSelect.value);
+            if (price) {
+              formData.set('entryPrice', price);
+            }
+          }
+          formData.append('action', currentAction);
+          formData.set('type', document.getElementById('orderType').value);
+          
+          // เพิ่ม stopPrice เฉพาะ type=stop
+          if (document.getElementById('orderType').value === 'stop') {
+            formData.append('stopPrice', document.getElementById('stopPrice').value);
+          }
+          
+          // Clean empty values
+          ['stopLoss', 'takeProfit'].forEach(field => {
+            const value = formData.get(field);
+            if (!value || value.trim() === '') {
+              formData.delete(field);
+            }
+          });
+          
+          // Validation เฉพาะแต่ละ type
+          const type = document.getElementById('orderType').value;
+          if (type === 'limit' && !formData.get('entryPrice')) {
+            alert('กรุณากรอก Entry Price สำหรับ Limit Order');
+            return;
+          }
+          if (type === 'stop' && !formData.get('stopPrice')) {
+            alert('กรุณากรอก Stop Price สำหรับ Stop Order');
+            return;
+          }
+          
+          const submitBtn = document.getElementById('submitBtn');
+          const originalText = submitBtn.innerHTML;
+          submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Placing Order...';
+          submitBtn.disabled = true;
+          
+          try {
+            const response = await fetch('/api/trade', {
+              method: 'POST',
+              body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+              alert('Order placed successfully!\nAction: ' + data.trade.action.toUpperCase() + '\nLot: ' + data.trade.lot + '\nScore: ' + data.trade.score);
+              tradeForm.reset();
+              setAction('buy');
+              
+              // Refresh data
+              setTimeout(() => {
+                loadRecentTrades();
+                loadOpenPositions();
+                loadUserLevelInfo();
+              }, 1000);
+            } else {
+              alert('Error: ' + (data.error || 'Unknown error'));
+            }
+          } catch (error) {
+            console.error('Error placing order:', error);
+            alert('Error placing order: ' + error.message);
+          } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+          }
+        });
+      }
+    });
+  </script>
+</body>
+
+</html>

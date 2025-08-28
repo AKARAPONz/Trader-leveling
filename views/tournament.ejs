@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tournament · Trader Leveling</title>
+  <link href="/css/minimal.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://s3.tradingview.com/tv.js"></script>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="brand">
+        <i class="bi bi-graph-up-arrow"></i>
+        Trader Leveling
+      </a>
+    </div>
+    <nav class="nav-menu">
+      <div class="nav-item">
+        <a href="/" class="nav-link">
+          <i class="bi bi-house-door"></i>
+          Home
+        </a>
+      </div>
+      <div class="nav-item">
+        <% if (latestTournamentId) { %>
+          <a href="/dashboard?tournamentId=<%= latestTournamentId %>" class="nav-link">
+            <i class="bi bi-grid-1x2"></i>
+            Dashboard
+          </a>
+        <% } else { %>
+          <span class="nav-link disabled"><i class="bi bi-grid-1x2"></i> Dashboard</span>
+        <% } %>
+      </div>
+      <div class="nav-item">
+        <a href="/tournament" class="nav-link active">
+          <i class="bi bi-trophy"></i>
+          Tournament
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="/trade" class="nav-link">
+          <i class="bi bi-graph-up"></i>
+          Trade
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="/profile" class="nav-link">
+          <i class="bi bi-person"></i>
+          Profile
+        </a>
+      </div>
+      <% if (user.role === 'admin') { %>
+        <div class="nav-item">
+          <a href="/admin/users" class="nav-link">
+            <i class="bi bi-people"></i>
+            Users
+          </a>
+        </div>
+      <% } %>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="auth-buttons">
+        <% if (loggedIn) { %>
+          <a href="/logout" class="btn btn-outline">
+            <i class="bi bi-box-arrow-right"></i>
+            Logout
+          </a>
+        <% } else { %>
+          <a href="/login" class="btn btn-primary">
+            <i class="bi bi-box-arrow-in-right"></i>
+            Sign In
+          </a>
+          <a href="/register" class="btn btn-secondary">
+            <i class="bi bi-person-plus"></i>
+            Sign Up
+          </a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+    <div class="topbar">
+      <div class="user-info">
+        <div class="user-details">
+          <h4>Tournament</h4>
+          <small>
+            Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
+            EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
+            Role: <%= user.role || 'guest' %>, @<%= user.name || user.email || 'Guest' %> <br />
+            <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
+          </small>
+        </div>
+      </div>
+      <img src="<%= user.profileImage + '?v=' + Date.now() %>" class="avatar" alt="Profile" />
+      <button class="btn btn-secondary btn-sm" onclick="toggleTheme()" style="margin-left:1rem;">
+        <i class="bi bi-moon"></i>
+      </button>
+    </div>
+    <div class="content">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0"><i class="bi bi-trophy"></i> Current & Upcoming Tournaments</h2>
+        <% if (user.role === 'admin') { %>
+          <button class="btn btn-primary" onclick="openCreateModal()">
+            <i class="bi bi-plus-circle"></i> Add New Tournament
+          </button>
+        <% } %>
+      </div>
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Balance</th>
+                  <th>Assets</th>
+                  <th>Start</th>
+                  <th>End</th>
+                  <th>Status</th>
+                  <th>When</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tournamentTable">
+                <% for (let i = 0; i < tournaments.length; i++) { 
+                  const t = tournaments[i];
+                  const now = new Date();
+                  const start = new Date(t.start);
+                  const end = new Date(t.end);
+                  let when = '';
+                  if (now > end) {
+                    when = '-';
+                  } else if (now >= start && now <= end) {
+                    const daysPassed = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
+                    when = `Day ${daysPassed}`;
+                  } else {
+                    const daysUntilStart = Math.ceil((start - now) / (1000 * 60 * 60 * 24));
+                    when = `start in ${daysUntilStart} days`;
+                  }
+                %>
+                <tr data-tournament-id="<%= t._id %>">
+                  <td><%= t.name %></td>
+                  <td>$<%= t.balance %></td>
+                  <td><%= t.assets.join(', ') %></td>
+                  <td><%= t.start %></td>
+                  <td><%= t.end %></td>
+                  <td>
+                    <% if (t.status === 'COMPLETE') { %>
+                      <span class="badge badge-secondary">COMPLETE</span>
+                    <% } else if (t.status === 'RUNNING') { %>
+                      <span class="badge badge-success">RUNNING</span>
+                    <% } else { %>
+                      <span class="badge badge-primary">REGISTRATION</span>
+                    <% } %>
+                  </td>
+                  <td><%= when %></td>
+                  <td>
+                    <% if (t.status === 'RUNNING' || t.status === 'COMPLETE') { %>
+                      <a href="/dashboard?tournamentId=<%= t._id %>" class="btn btn-outline btn-sm">Dashboard</a>
+                      <% if (t.status === 'RUNNING') { %>
+                        <a href="/trade?tournamentId=<%= t._id %>" class="btn btn-primary btn-sm">Trade</a>
+                      <% } %>
+                    <% } %>
+                    <% if (t.status === 'REGISTRATION' || t.status === 'RUNNING') { %>
+                      <button class="btn btn-success btn-sm" onclick="joinTournament('<%= t._id %>')" id="joinBtn-<%= t._id %>">
+                        <i class="bi bi-person-plus"></i> Join
+                      </button>
+                      <span id="joinStatus-<%= t._id %>" class="badge badge-secondary" style="display:none;">Loading...</span>
+                    <% } %>
+                    <% if (user.role === 'admin') { %>
+                      <button class="btn btn-secondary btn-sm" onclick="openEditModal('<%= t._id %>', '<%= t.name %>', '<%= t.balance %>', '<%= t.assets.join(', ') %>', '<%= t.start %>', '<%= t.end %>')">Edit</button>
+                      <button class="btn btn-info btn-sm" onclick="viewRequests('<%= t._id %>')">Requests</button>
+                      <form method="POST" action="/tournament/delete/<%= t._id %>" style="display:inline">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this tournament?')">Delete</button>
+                      </form>
+                    <% } %>
+                  </td>
+                </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div id="chart-container" class="my-4"></div>
+    </div>
+  </div>
+
+  <!-- Create Tournament Modal -->
+  <div id="createModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5>Create New Tournament</h5>
+        <span class="close" onclick="closeCreateModal()">&times;</span>
+      </div>
+      <form action="/tournament/create" method="POST">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="name">Tournament Name</label>
+            <input type="text" name="name" id="name" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="balance">Balance</label>
+            <input type="number" name="balance" id="balance" class="form-control" value="10000" required>
+          </div>
+          <div class="form-group">
+            <label for="assets">Asset</label>
+            <div class="mb-2">
+              <div class="d-flex flex-wrap gap-1 mb-2">
+                <!-- Forex -->
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('EUR/USD')">EUR/USD</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('USD/JPY')">USD/JPY</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('GBP/USD')">GBP/USD</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('AUD/USD')">AUD/USD</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('USD/CAD')">USD/CAD</button>
+              </div>
+              <div class="d-flex flex-wrap gap-1 mb-2">
+                <!-- Crypto -->
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('BTC/USD')">BTC/USD</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('ETH/USD')">ETH/USD</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('BNB/USD')">BNB/USD</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('SOL/USD')">SOL/USD</button>
+              </div>
+              <div class="d-flex flex-wrap gap-1 mb-2">
+                <!-- Commodities -->
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('XAU/USD')">XAU/USD</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('XAG/USD')">XAG/USD</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('OIL/USD')">OIL/USD</button>
+              </div>
+              <div class="d-flex flex-wrap gap-1">
+                <!-- Stocks -->
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('AAPL')">AAPL</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('GOOG')">GOOG</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('MSFT')">MSFT</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('TSLA')">TSLA</button>
+              </div>
+            </div>
+            <input type="text" name="assets" id="assets" class="form-control" value="EUR/USD" required>
+            <small class="text-muted">Click a button above to select one asset, or type manually</small>
+          </div>
+          <div class="form-group">
+            <label for="start">Start Date</label>
+            <input type="datetime-local" name="start" id="start" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="end">End Date</label>
+            <input type="datetime-local" name="end" id="end" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Tournament</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Tournament Modal -->
+  <div id="editModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5>Edit Tournament</h5>
+        <span class="close" onclick="closeEditModal()">&times;</span>
+      </div>
+      <form action="/tournament/update" method="POST">
+        <input type="hidden" name="tournamentId" id="editTournamentId">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="editName">Tournament Name</label>
+            <input type="text" name="name" id="editName" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="editBalance">Balance</label>
+            <input type="number" name="balance" id="editBalance" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="editAssets">Asset</label>
+            <div class="mb-2">
+              <div class="d-flex flex-wrap gap-1 mb-2">
+                <!-- Forex -->
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('EUR/USD')">EUR/USD</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('USD/JPY')">USD/JPY</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('GBP/USD')">GBP/USD</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('AUD/USD')">AUD/USD</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('USD/CAD')">USD/CAD</button>
+              </div>
+              <div class="d-flex flex-wrap gap-1 mb-2">
+                <!-- Crypto -->
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('BTC/USD')">BTC/USD</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('ETH/USD')">ETH/USD</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('BNB/USD')">BNB/USD</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('SOL/USD')">SOL/USD</button>
+              </div>
+              <div class="d-flex flex-wrap gap-1 mb-2">
+                <!-- Commodities -->
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('XAU/USD')">XAU/USD</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('XAG/USD')">XAG/USD</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('OIL/USD')">OIL/USD</button>
+              </div>
+              <div class="d-flex flex-wrap gap-1">
+                <!-- Stocks -->
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('AAPL')">AAPL</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('GOOG')">GOOG</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('MSFT')">MSFT</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('TSLA')">TSLA</button>
+              </div>
+            </div>
+            <input type="text" name="assets" id="editAssets" class="form-control" required>
+            <small class="text-muted">Click a button above to select one asset, or type manually</small>
+          </div>
+          <div class="form-group">
+            <label for="editStart">Start Date</label>
+            <input type="datetime-local" name="start" id="editStart" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="editEnd">End Date</label>
+            <input type="datetime-local" name="end" id="editEnd" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update Tournament</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tournament Requests Modal -->
+  <div id="requestsModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5>Tournament Join Requests</h5>
+        <span class="close" onclick="closeRequestsModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div id="requestsList">
+          <p class="text-muted text-center">Loading requests...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/tournament.js"></script>
+</body>
+</html>
+
