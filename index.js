@@ -19,7 +19,7 @@ app.use('/api/mt5-data', mt5DataRoutes);
 const upload = multer();
 
 // MongoDB Connection
-mongoose.connect('mongodb+srv://traderleveling:cWFog925W2tLEx7n@cluster0.kw0wsmj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
+mongoose.connect('mongodb+srv://admin:1234@cluster0.dczs0k3.mongodb.net/', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
@@ -121,6 +121,9 @@ app.use('/api/tournament-actions', require('./routes/api/tournament-actions'));
 app.use('/api/close-position', require('./routes/api/close-position'));
 app.use('/api/user-level', require('./routes/api/user-level'));
 app.use('/api/tournament-join', require('./routes/api/tournament-join'));
+
+// MT5 Command Queue API for EA polling
+app.use('/api/mt5-command', require('./routes/api/mt5-command'));
 
 async function getMarketPrice(symbol) {
   try {

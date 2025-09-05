@@ -20,17 +20,11 @@
       </a>
     </div>
     
-    <nav class="nav-menu">
+        <nav class="nav-menu">
       <div class="nav-item">
-        <a href="/" class="nav-link active">
+        <a href="/" class="nav-link">
           <i class="bi bi-house-door"></i>
           Home
-        </a>
-      </div>
-      <div class="nav-item">
-        <a href="/dashboard" class="nav-link">
-          <i class="bi bi-grid-1x2"></i>
-          Dashboard
         </a>
       </div>
       <div class="nav-item">
@@ -39,18 +33,26 @@
           Tournament
         </a>
       </div>
-      <div class="nav-item">
-        <a href="/trade" class="nav-link">
-          <i class="bi bi-graph-up"></i>
-          Trade
-        </a>
-      </div>
-      <div class="nav-item">
-        <a href="/profile" class="nav-link">
-          <i class="bi bi-person"></i>
-          Profile
-        </a>
-      </div>
+      <% if (user.role === 'trader' || user.role === 'admin') { %>
+        <div class="nav-item">
+          <a href="/dashboard" class="nav-link">
+            <i class="bi bi-grid-1x2"></i>
+            Dashboard
+          </a>
+        </div>
+        <div class="nav-item">
+          <a href="/trade" class="nav-link">
+            <i class="bi bi-graph-up"></i>
+            Trade
+          </a>
+        </div>
+        <div class="nav-item">
+          <a href="/profile" class="nav-link">
+            <i class="bi bi-person"></i>
+            Profile
+          </a>
+        </div>
+      <% } %>
       <% if (user.role === 'admin') { %>
         <div class="nav-item">
           <a href="/admin/users" class="nav-link">
@@ -91,15 +93,12 @@
           <small>
             Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
             EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
-            Role: <%= user.role || 'guest' %>, @<%= user.name || user.email || 'Guest' %> <br />
+            Role: <%= user.role || 'guest' %>, @<%= user.username || 'Guest' %> <br />
             <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
           </small>
         </div>
       </div>
       <img src="<%= user.profileImage || '/default-avatar.png' %>?v=<%= Date.now() %>" class="avatar" alt="Profile" />
-      <button class="btn btn-secondary btn-sm" onclick="toggleTheme()" style="margin-left:1rem;">
-        <i class="bi bi-moon"></i>
-      </button>
     </div>
 
     <div class="content">

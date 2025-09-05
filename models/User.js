@@ -3,10 +3,9 @@ const Schema = mongoose.Schema;
 const bcrypt = require('bcrypt');
 
 const UserSchema = new Schema({
-  email: {
+    username: {
     type: String,
-    required: [true, 'Please provide email'],
-    unique: true
+    required: [true, 'Please provide username']
   },
   password: {
     type: String,
@@ -36,6 +35,11 @@ const UserSchema = new Schema({
     type: String,
     enum: ['admin', 'trader', 'guest'],
     default: 'guest'
+  },
+  username: {
+    type: String,
+    required: [true, 'Please provide username'],
+    unique: true
   }
 });
 

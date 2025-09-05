@@ -17,37 +17,42 @@
           Trader Leveling
         </a>
       </div>
-      <nav class="nav-menu">
+
+     <nav class="nav-menu">
+      <div class="nav-item">
+        <a href="/" class="nav-link">
+          <i class="bi bi-house-door"></i>
+          Home
+        </a>
+      </div>
+      <% if (user.role === 'trader' || user.role === 'admin') { %>
         <div class="nav-item">
-          <a href="/" class="nav-link">
-            <i class="bi bi-house-door"></i>
-            Home
-          </a>
-        </div>
-        <div class="nav-item">
-          <a href="/dashboard" class="nav-link">
+          <a href="/dashboard" class="nav-link active">
             <i class="bi bi-grid-1x2"></i>
             Dashboard
           </a>
         </div>
-              <div class="nav-item">
-        <a href="/tournament" class="nav-link">
-          <i class="bi bi-trophy"></i>
-          Tournament
-        </a>
-      </div>
-      <div class="nav-item">
-        <a href="/trade" class="nav-link">
-          <i class="bi bi-graph-up"></i>
-          Trade
-        </a>
-      </div>
-      <div class="nav-item">
-        <a href="/profile" class="nav-link active">
-          <i class="bi bi-person"></i>
-          Profile
-        </a>
-      </div>
+      <% } %>
+        <div class="nav-item">
+          <a href="/tournament" class="nav-link">
+            <i class="bi bi-trophy"></i>
+            Tournament
+          </a>
+        </div>
+      <% if (user.role === 'trader' || user.role === 'admin') { %>
+        <div class="nav-item">
+          <a href="/trade" class="nav-link">
+            <i class="bi bi-graph-up"></i>
+            Trade
+          </a>
+        </div>
+        <div class="nav-item">
+          <a href="/profile" class="nav-link">
+            <i class="bi bi-person"></i>
+            Profile
+          </a>
+        </div>
+      <% } %>
       <% if (user.role === 'admin') { %>
         <div class="nav-item">
           <a href="/admin/users" class="nav-link">
@@ -56,7 +61,8 @@
           </a>
         </div>
       <% } %>
-      </nav>
+    </nav>
+    
       <div class="sidebar-footer">
         <div class="auth-buttons">
           <% if (loggedIn) { %>
@@ -93,9 +99,6 @@
           </div>
         </div>
         <img src="<%= user.profileImage || '/default-avatar.png' %>?v=<%= Date.now() %>" class="avatar" alt="Profile" />
-        <button class="btn btn-secondary btn-sm" onclick="toggleTheme()" style="margin-left:1rem;">
-          <i class="bi bi-moon"></i>
-        </button>
       </div>
       <div class="content">
         <!-- User Level Info -->
@@ -143,8 +146,8 @@
           <div class="card-body">
             <form action="/profile/update" method="POST" enctype="multipart/form-data">
               <div class="form-group">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" name="email" value="<%= user.email %>" readonly />
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" name="username" value="<%= user.username %>" readonly />
               </div>
               <div class="form-group">
                 <label for="age" class="form-label">Age</label>

@@ -57,17 +57,30 @@ exports.index = async (req, res) => {
     { $sort: { score: -1 } }
   ]);
 
-  // Join กับ User เพื่อดึงชื่อ
-  const leaderboard = await Promise.all(
-    logs.map(async (entry) => {
-      const user = await User.findById(entry._id);
-      return {
-        _id: entry._id,
-        name: user?.name || user?.email || 'Unknown',
-        score: entry.score
-      };
-    })
-  );
+  // Get all accepted participants
+  const acceptedRequests = await TournamentRequest.find({
+    tournamentId: tournamentObjectId,
+    status: 'accepted'
+  }).populate('userId');
+
+  // Build a map of userId to score from logs
+  const scoreMap = new Map();
+  logs.forEach(entry => {
+    scoreMap.set(entry._id.toString(), entry.score);
+  });
+
+  // Build leaderboard: all accepted participants, with score if exists, else 0
+  const leaderboard = acceptedRequests.map(req => {
+    const user = req.userId;
+    return {
+      _id: user._id,
+      name: user.name || user.email || 'Unknown',
+      score: scoreMap.get(user._id.toString()) || 0
+    };
+  });
+
+  // Sort leaderboard by score descending
+  leaderboard.sort((a, b) => b.score - a.score);
 
   let winner = null;
   if (isClosed && leaderboard.length > 0) {

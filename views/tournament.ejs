@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,6 +18,7 @@
         Trader Leveling
       </a>
     </div>
+
     <nav class="nav-menu">
       <div class="nav-item">
         <a href="/" class="nav-link">
@@ -25,34 +26,34 @@
           Home
         </a>
       </div>
-      <div class="nav-item">
-        <% if (latestTournamentId) { %>
-          <a href="/dashboard?tournamentId=<%= latestTournamentId %>" class="nav-link">
+      <% if (user.role === 'trader' || user.role === 'admin') { %>
+        <div class="nav-item">
+          <a href="/dashboard" class="nav-link active">
             <i class="bi bi-grid-1x2"></i>
             Dashboard
           </a>
-        <% } else { %>
-          <span class="nav-link disabled"><i class="bi bi-grid-1x2"></i> Dashboard</span>
-        <% } %>
-      </div>
-      <div class="nav-item">
-        <a href="/tournament" class="nav-link active">
-          <i class="bi bi-trophy"></i>
-          Tournament
-        </a>
-      </div>
-      <div class="nav-item">
-        <a href="/trade" class="nav-link">
-          <i class="bi bi-graph-up"></i>
-          Trade
-        </a>
-      </div>
-      <div class="nav-item">
-        <a href="/profile" class="nav-link">
-          <i class="bi bi-person"></i>
-          Profile
-        </a>
-      </div>
+        </div>
+      <% } %>
+        <div class="nav-item">
+          <a href="/tournament" class="nav-link">
+            <i class="bi bi-trophy"></i>
+            Tournament
+          </a>
+        </div>
+      <% if (user.role === 'trader' || user.role === 'admin') { %>
+        <div class="nav-item">
+          <a href="/trade" class="nav-link">
+            <i class="bi bi-graph-up"></i>
+            Trade
+          </a>
+        </div>
+        <div class="nav-item">
+          <a href="/profile" class="nav-link">
+            <i class="bi bi-person"></i>
+            Profile
+          </a>
+        </div>
+      <% } %>
       <% if (user.role === 'admin') { %>
         <div class="nav-item">
           <a href="/admin/users" class="nav-link">
@@ -62,6 +63,7 @@
         </div>
       <% } %>
     </nav>
+    
     <div class="sidebar-footer">
       <div class="auth-buttons">
         <% if (loggedIn) { %>
@@ -92,15 +94,12 @@
           <small>
             Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
             EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
-            Role: <%= user.role || 'guest' %>, @<%= user.name || user.email || 'Guest' %> <br />
+            Role: <%= user.role || 'guest' %>, @<%= user.username || 'Guest' %> <br />
             <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
           </small>
         </div>
       </div>
       <img src="<%= user.profileImage + '?v=' + Date.now() %>" class="avatar" alt="Profile" />
-      <button class="btn btn-secondary btn-sm" onclick="toggleTheme()" style="margin-left:1rem;">
-        <i class="bi bi-moon"></i>
-      </button>
     </div>
     <div class="content">
       <div class="d-flex justify-content-between align-items-center mb-3">
@@ -119,12 +118,10 @@
                 <tr>
                   <th>Name</th>
                   <th>Balance</th>
-                  <th>Assets</th>
                   <th>Start</th>
                   <th>End</th>
                   <th>Status</th>
                   <th>When</th>
-                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="tournamentTable">
@@ -148,8 +145,14 @@
                   <td><%= t.name %></td>
                   <td>$<%= t.balance %></td>
                   <td><%= t.assets.join(', ') %></td>
-                  <td><%= t.start %></td>
-                  <td><%= t.end %></td>
+                  <td style="white-space:nowrap;">
+                  <%= start.toLocaleString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZoneName: 'short' }) %>
+                  <br><span style="font-size:0.9em;color:#888;">(Indonesia Time Zone)</span>
+                  </td>
+                  <td style="white-space:nowrap;">
+                  <%= end.toLocaleString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZoneName: 'short' }) %>
+                  <br><span style="font-size:0.9em;color:#888;">(Indonesia Time Zone)</span>
+                  </td>
                   <td>
                     <% if (t.status === 'COMPLETE') { %>
                       <span class="badge badge-secondary">COMPLETE</span>
@@ -161,13 +164,11 @@
                   </td>
                   <td><%= when %></td>
                   <td>
-                    <% if (t.status === 'RUNNING' || t.status === 'COMPLETE') { %>
-                      <a href="/dashboard?tournamentId=<%= t._id %>" class="btn btn-outline btn-sm">Dashboard</a>
-                      <% if (t.status === 'RUNNING') { %>
-                        <a href="/trade?tournamentId=<%= t._id %>" class="btn btn-primary btn-sm">Trade</a>
-                      <% } %>
+                    <a href="/dashboard?tournamentId=<%= t._id %>" class="btn btn-outline btn-sm">Dashboard</a>
+                    <% if (t.status === 'RUNNING' && (user.role === 'trader' || user.role === 'admin')) { %>
+                      <a href="/trade?tournamentId=<%= t._id %>" class="btn btn-primary btn-sm">Trade</a>
                     <% } %>
-                    <% if (t.status === 'REGISTRATION' || t.status === 'RUNNING') { %>
+                    <% if ((t.status === 'REGISTRATION' || t.status === 'RUNNING') && (user.role === 'trader' || user.role === 'admin')) { %>
                       <button class="btn btn-success btn-sm" onclick="joinTournament('<%= t._id %>')" id="joinBtn-<%= t._id %>">
                         <i class="bi bi-person-plus"></i> Join
                       </button>
@@ -210,41 +211,6 @@
             <input type="number" name="balance" id="balance" class="form-control" value="10000" required>
           </div>
           <div class="form-group">
-            <label for="assets">Asset</label>
-            <div class="mb-2">
-              <div class="d-flex flex-wrap gap-1 mb-2">
-                <!-- Forex -->
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('EUR/USD')">EUR/USD</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('USD/JPY')">USD/JPY</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('GBP/USD')">GBP/USD</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('AUD/USD')">AUD/USD</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('USD/CAD')">USD/CAD</button>
-              </div>
-              <div class="d-flex flex-wrap gap-1 mb-2">
-                <!-- Crypto -->
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('BTC/USD')">BTC/USD</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('ETH/USD')">ETH/USD</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('BNB/USD')">BNB/USD</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('SOL/USD')">SOL/USD</button>
-              </div>
-              <div class="d-flex flex-wrap gap-1 mb-2">
-                <!-- Commodities -->
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('XAU/USD')">XAU/USD</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('XAG/USD')">XAG/USD</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('OIL/USD')">OIL/USD</button>
-              </div>
-              <div class="d-flex flex-wrap gap-1">
-                <!-- Stocks -->
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('AAPL')">AAPL</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('GOOG')">GOOG</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('MSFT')">MSFT</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectAsset('TSLA')">TSLA</button>
-              </div>
-            </div>
-            <input type="text" name="assets" id="assets" class="form-control" value="EUR/USD" required>
-            <small class="text-muted">Click a button above to select one asset, or type manually</small>
-          </div>
-          <div class="form-group">
             <label for="start">Start Date</label>
             <input type="datetime-local" name="start" id="start" class="form-control" required>
           </div>
@@ -278,41 +244,6 @@
           <div class="form-group">
             <label for="editBalance">Balance</label>
             <input type="number" name="balance" id="editBalance" class="form-control" required>
-          </div>
-          <div class="form-group">
-            <label for="editAssets">Asset</label>
-            <div class="mb-2">
-              <div class="d-flex flex-wrap gap-1 mb-2">
-                <!-- Forex -->
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('EUR/USD')">EUR/USD</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('USD/JPY')">USD/JPY</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('GBP/USD')">GBP/USD</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('AUD/USD')">AUD/USD</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('USD/CAD')">USD/CAD</button>
-              </div>
-              <div class="d-flex flex-wrap gap-1 mb-2">
-                <!-- Crypto -->
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('BTC/USD')">BTC/USD</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('ETH/USD')">ETH/USD</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('BNB/USD')">BNB/USD</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('SOL/USD')">SOL/USD</button>
-              </div>
-              <div class="d-flex flex-wrap gap-1 mb-2">
-                <!-- Commodities -->
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('XAU/USD')">XAU/USD</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('XAG/USD')">XAG/USD</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('OIL/USD')">OIL/USD</button>
-              </div>
-              <div class="d-flex flex-wrap gap-1">
-                <!-- Stocks -->
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('AAPL')">AAPL</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('GOOG')">GOOG</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('MSFT')">MSFT</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="selectEditAsset('TSLA')">TSLA</button>
-              </div>
-            </div>
-            <input type="text" name="assets" id="editAssets" class="form-control" required>
-            <small class="text-muted">Click a button above to select one asset, or type manually</small>
           </div>
           <div class="form-group">
             <label for="editStart">Start Date</label>

@@ -2,26 +2,26 @@ const bcrypt = require('bcrypt');
 const User = require('../models/User');
 
 module.exports = async (req, res) => {
-  const { email, password } = req.body;
+  const { username, password } = req.body;
 
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ username });
 
     if (!user) {
-      req.flash('error', 'Email or password is incorrect');
+      req.flash('error', 'Username or password is incorrect');
       return res.render('login', {
         messages: req.flash(),
-        email
+        username
       });
     }
 
     const match = await bcrypt.compare(password, user.password);
 
     if (!match) {
-      req.flash('error', 'Email or password is incorrect');
+      req.flash('error', 'Username or password is incorrect');
       return res.render('login', {
         messages: req.flash(),
-        email
+        username
       });
     }
 
@@ -29,7 +29,7 @@ module.exports = async (req, res) => {
     req.session.userId = user._id;
     req.session.user = {
       name: user.name || '', // fallback ถ้าไม่มี name
-      email: user.email,
+      username: user.username,
       profileImage: user.profileImage || '/uploads/default.jpg',
       _id: user._id,
       age: user.age || null,

@@ -27,29 +27,31 @@
         </a>
       </div>
       <div class="nav-item">
-        <a href="/dashboard" class="nav-link active">
-          <i class="bi bi-grid-1x2"></i>
-          Dashboard
-        </a>
-      </div>
-      <div class="nav-item">
         <a href="/tournament" class="nav-link">
           <i class="bi bi-trophy"></i>
           Tournament
         </a>
       </div>
-      <div class="nav-item">
-        <a href="/trade" class="nav-link">
-          <i class="bi bi-graph-up"></i>
-          Trade
-        </a>
-      </div>
-      <div class="nav-item">
-        <a href="/profile" class="nav-link">
-          <i class="bi bi-person"></i>
-          Profile
-        </a>
-      </div>
+      <% if (user.role === 'trader' || user.role === 'admin') { %>
+        <div class="nav-item">
+          <a href="/dashboard" class="nav-link active">
+            <i class="bi bi-grid-1x2"></i>
+            Dashboard
+          </a>
+        </div>
+        <div class="nav-item">
+          <a href="/trade" class="nav-link">
+            <i class="bi bi-graph-up"></i>
+            Trade
+          </a>
+        </div>
+        <div class="nav-item">
+          <a href="/profile" class="nav-link">
+            <i class="bi bi-person"></i>
+            Profile
+          </a>
+        </div>
+      <% } %>
       <% if (user.role === 'admin') { %>
         <div class="nav-item">
           <a href="/admin/users" class="nav-link">
@@ -90,7 +92,7 @@
           <small>
             Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
             EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
-            Role: <%= user.role || 'guest' %>, @<%= user.name || user.email || 'Guest' %> <br />
+            Role: <%= user.role || 'guest' %>, @<%= user.username || 'Guest' %> <br />
             <%= new Date().toLocaleDateString('en-GB', {
               weekday: 'short',
               day: '2-digit',
@@ -196,7 +198,7 @@
           <div class="card mb-4">
             <div class="card-header">
               <h5><i class="bi bi-trophy"></i> Tournament: <%= tournament.name %></h5>
-              <small class="text-muted">Balance: $<%= accountBalance.toFixed(2) %> | Assets: <%= tournament.assets.join(', ') %></small>
+              <small class="text-muted">Balance: $<%= accountBalance.toFixed(2) %></small>
             </div>
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center">
@@ -240,7 +242,7 @@
                   <% leaderboard.forEach(function(entry, idx) { %>
                     <tr<%= entry._id.toString() === user._id.toString() ? ' class="table-success"' : '' %>>
                       <td><%= idx + 1 %></td>
-                      <td><%= entry.name %></td>
+                      <td><%= entry.username || 'Unknown' %></td>
                       <td><%= entry.score %></td>
                     </tr>
                   <% }) %>

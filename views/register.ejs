@@ -184,6 +184,42 @@
           transform: translateY(0);
         }
       }
+
+      .nav-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 1rem;
+        background: var(--bg-primary);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-md);
+        margin-bottom: 1.5rem;
+      }
+
+      .nav-item {
+        width: 100%;
+      }
+
+      .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-md);
+        color: var(--text-primary);
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+      }
+
+      .nav-link:hover {
+        background: var(--bg-secondary);
+      }
+
+      .bi {
+        flex-shrink: 0;
+        font-size: 1.25rem;
+        color: var(--primary-color);
+      }
     </style>
     <script src="/js/register.js"></script>
   </head>
@@ -213,8 +249,8 @@
             <% } %>
           <% } %>
           <div class="form-group">
-            <label for="email" class="form-label">Email</label>
-            <input type="email" name="email" value="<%= email %>" class="form-control" id="email" placeholder="name@example.com" required>
+            <label for="username" class="form-label">Username</label>
+            <input type="text" name="username" value="<%= typeof username !== 'undefined' ? username : '' %>" class="form-control" id="username" placeholder="your username" required>
           </div>
           <div class="form-group">
             <label for="password" class="form-label">Password</label>

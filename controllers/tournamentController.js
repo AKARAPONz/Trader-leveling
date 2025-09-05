@@ -7,13 +7,12 @@ exports.createTournament = async (req, res) => {
     return res.status(403).send('Access denied. Admin only.');
   }
 
-  const { name, balance, assets, start, end } = req.body;
+  const { name, balance, start, end } = req.body;
 
   try {
     const newTournament = new Tournament({
       name,
       balance,
-      assets: Array.isArray(assets) ? assets : [assets], // รองรับ array หรือ string เดียว
       start,
       end,
     });
@@ -78,13 +77,12 @@ exports.updateTournament = async (req, res) => {
     return res.status(403).send('Access denied. Admin only.');
   }
 
-  const { tournamentId, name, balance, assets, start, end } = req.body;
+  const { tournamentId, name, balance, start, end } = req.body;
 
   try {
     await Tournament.findByIdAndUpdate(tournamentId, {
       name,
       balance,
-      assets: Array.isArray(assets) ? assets : [assets],
       start,
       end,
     });

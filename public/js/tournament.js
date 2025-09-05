@@ -22,7 +22,10 @@ function openEditModal(id, name, balance, assets, start, end) {
   document.getElementById('editTournamentId').value = id;
   document.getElementById('editName').value = name;
   document.getElementById('editBalance').value = balance;
-  document.getElementById('editAssets').value = assets;
+  // ลบ assets ออกถ้าไม่มี input นี้ในฟอร์ม
+  if (document.getElementById('editAssets')) {
+    document.getElementById('editAssets').value = assets;
+  }
   document.getElementById('editStart').value = start.slice(0, 16);
   document.getElementById('editEnd').value = end.slice(0, 16);
   document.getElementById('editModal').style.display = 'block';
@@ -506,4 +509,4 @@ function highlightSelectedEditAsset() {
       }
     }
   }
-} 
+}

@@ -87,15 +87,12 @@
           <small>
             Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
             EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
-            Role: <%= user.role || 'guest' %>, @<%= user.name || user.email || 'Guest' %> <br />
+            Role: <%= user.role || 'guest' %>, @<%= user.username || 'Guest' %> <br />
             <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
           </small>
         </div>
       </div>
       <img src="<%= user.profileImage || '/default-avatar.png' %>?v=<%= Date.now() %>" class="avatar" alt="Profile" />
-      <button class="btn btn-secondary btn-sm" onclick="toggleTheme()" style="margin-left:1rem;">
-        <i class="bi bi-moon"></i>
-      </button>
     </div>
     <div class="content">
       <div class="d-flex justify-content-between align-items-center mb-4">
@@ -109,7 +106,7 @@
           <table class="table">
             <thead>
               <tr>
-                <th>Email</th>
+                <th>Username</th>
                 <th>Age</th>
                 <th>Country</th>
                 <th>Role</th>
@@ -121,7 +118,7 @@
             <tbody>
               <% users.forEach(user => { %>
                 <tr>
-                  <td><%= user.email %></td>
+                  <td><%= user.username %></td>
                   <td><%= user.age %></td>
                   <td><%= user.country %></td>
                   <td><%= user.role %></td>

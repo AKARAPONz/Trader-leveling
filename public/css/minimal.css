@@ -37,20 +37,6 @@
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
-/* Dark Theme Variables */
-[data-theme="dark"] {
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-tertiary: #334155;
-  
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  
-  --border-color: #334155;
-  --border-hover: #475569;
-}
-
 /* Base Styles */
 * {
   box-sizing: border-box;
@@ -97,30 +83,12 @@ p {
   display: flex;
   flex-direction: column;
   z-index: 1000;
-  transition: all 0.3s ease;
-  transform: translateX(-240px); /* Collapsed by default */
+  transition: none;
+  transform: none; /* Always visible */
 }
 
-/* Show small indicator when collapsed */
 .sidebar::before {
-  content: '';
-  position: absolute;
-  right: -2px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 60px;
-  background: var(--primary-color);
-  border-radius: 2px;
-  opacity: 0.6;
-}
-
-.sidebar:hover {
-  transform: translateX(0); /* Expand on hover */
-}
-
-.sidebar:hover::before {
-  opacity: 0; /* Hide indicator when expanded */
+  display: none;
 }
 
 .sidebar-header {
@@ -254,7 +222,7 @@ p {
 
 /* Main Content */
 .main {
-  margin-left: 40px; /* Reduced margin for collapsed sidebar */
+  margin-left: 280px;
   min-height: 100vh;
   background-color: var(--bg-secondary);
   transition: margin-left 0.3s ease;
@@ -752,17 +720,3 @@ p {
   background: #b91c1c;
   color: #fff;
 }
-[data-theme="dark"] .btn-theme-edit {
-  background: #3b82f6;
-  color: #fff;
-}
-[data-theme="dark"] .btn-theme-edit:hover {
-  background: #2563eb;
-}
-[data-theme="dark"] .btn-theme-close {
-  background: #ef4444;
-  color: #fff;
-}
-[data-theme="dark"] .btn-theme-close:hover {
-  background: #b91c1c;
-} 

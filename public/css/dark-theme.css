@@ -1,0 +1,7 @@
+body.dark-theme {
+    --background-color: #121212;
+    --text-color: #ffffff;
+    --primary-color: #1e1e1e;
+    --secondary-color: #272727;
+    --accent-color: #bb86fc;
+}

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -126,37 +126,42 @@
         Trader Leveling
       </a>
     </div>
-    <nav class="nav-menu">
+
+        <nav class="nav-menu">
       <div class="nav-item">
         <a href="/" class="nav-link">
           <i class="bi bi-house-door"></i>
           Home
         </a>
       </div>
-      <div class="nav-item">
-        <a href="/dashboard" class="nav-link">
-          <i class="bi bi-grid-1x2"></i>
-          Dashboard
-        </a>
-      </div>
-      <div class="nav-item">
-        <a href="/tournament" class="nav-link">
-          <i class="bi bi-trophy"></i>
-          Tournament
-        </a>
-      </div>
-      <div class="nav-item">
-        <a href="/trade" class="nav-link active">
-          <i class="bi bi-graph-up"></i>
-          Trade
-        </a>
-      </div>
-      <div class="nav-item">
-        <a href="/profile" class="nav-link">
-          <i class="bi bi-person"></i>
-          Profile
-        </a>
-      </div>
+      <% if (user.role === 'trader' || user.role === 'admin') { %>
+        <div class="nav-item">
+          <a href="/dashboard" class="nav-link active">
+            <i class="bi bi-grid-1x2"></i>
+            Dashboard
+          </a>
+        </div>
+      <% } %>
+        <div class="nav-item">
+          <a href="/tournament" class="nav-link">
+            <i class="bi bi-trophy"></i>
+            Tournament
+          </a>
+        </div>
+      <% if (user.role === 'trader' || user.role === 'admin') { %>
+        <div class="nav-item">
+          <a href="/trade" class="nav-link">
+            <i class="bi bi-graph-up"></i>
+            Trade
+          </a>
+        </div>
+        <div class="nav-item">
+          <a href="/profile" class="nav-link">
+            <i class="bi bi-person"></i>
+            Profile
+          </a>
+        </div>
+      <% } %>
       <% if (user.role === 'admin') { %>
         <div class="nav-item">
           <a href="/admin/users" class="nav-link">
@@ -166,6 +171,7 @@
         </div>
       <% } %>
     </nav>
+    
     <div class="sidebar-footer">
       <div class="auth-buttons">
         <% if (loggedIn) { %>
@@ -196,15 +202,12 @@
           <small>
             Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
             EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
-            Role: <%= user.role || 'guest' %>, @<%= user.name || user.email || 'Guest' %> <br />
+            Role: <%= user.role || 'guest' %>, @<%= user.username || user.name || user.email || 'Guest' %> <br />
             <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
           </small>
         </div>
       </div>
       <img src="<%= user.profileImage + '?v=' + Date.now() %>" class="avatar" alt="Profile" />
-      <button class="btn btn-secondary btn-sm" onclick="toggleTheme()" style="margin-left:1rem;">
-        <i class="bi bi-moon"></i>
-      </button>
     </div>
     <div class="content">
       <% if (error) { %>
@@ -284,13 +287,6 @@
                 <div class="d-flex justify-content-between align-items-center">
                   <h5><i class="bi bi-graph-up"></i> Trading Chart</h5>
                   <div class="d-flex gap-2">
-                    <div class="symbol-selector">
-                      <select id="symbolSelect" class="form-control" onchange="changeSymbol()">
-                        <% tournament.assets.forEach(function(asset) { %>
-                          <option value="<%= asset %>"><%= asset %></option>
-                        <% }); %>
-                      </select>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -482,6 +478,13 @@
   <script src="/socket.io/socket.io.js"></script> <!-- Add socket.io client library -->
   <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const theme = localStorage.getItem('theme') || 'light';
+      document.body.className = theme + '-theme';
+      document.documentElement.setAttribute('data-theme', theme);
+    });
+  </script>
+  <script>
 
 
     let currentAction = 'buy';
@@ -498,9 +501,11 @@
       if (html.getAttribute('data-theme') === 'light') {
         html.setAttribute('data-theme', 'dark');
         themeButton.className = "bi bi-sun";
+        localStorage.setItem('theme', 'dark');
       } else {
         html.setAttribute('data-theme', 'light');
         themeButton.className = "bi bi-moon";
+        localStorage.setItem('theme', 'light');
       }
       if (currentSymbol) {
         initChart();
@@ -573,8 +578,6 @@
         })));
       }
     }
-
-    // ...existing code...
 
     // เพิ่มฟังก์ชัน loadRecentTrades กลับมา
     async function loadRecentTrades() {

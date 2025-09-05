@@ -56,7 +56,12 @@ function initChart() {
     },
     grid: { vertLines: { color: '#eee' }, horzLines: { color: '#eee' } },
     timeScale: { timeVisible: true, secondsVisible: false },
-    rightPriceScale: { borderColor: '#ccc' },
+    rightPriceScale: {
+      borderColor: '#ccc',
+      entireTextOnly: true, // แสดงเฉพาะ label ที่ custom line เท่านั้น
+      ticksVisible: false,  // ไม่ต้องแสดง tick อัตโนมัติ
+      visible: true,
+    },
   });
   candleSeries = chart.addCandlestickSeries();
   fetchOHLCAndSet();
@@ -207,6 +212,14 @@ document.addEventListener('DOMContentLoaded', function() {
       if (symbolSelect && symbolSelect.value) {
         formData.set('symbol', symbolSelect.value);
       }
+      // ถ้าไม่กรอก entryPrice ให้เติมราคาตลาดล่าสุด
+      var entryPrice = formData.get('entryPrice');
+      if (!entryPrice) {
+        var marketPrice = getLastClosePriceOnChart ? getLastClosePriceOnChart() : null;
+        if (marketPrice) {
+          formData.set('entryPrice', marketPrice);
+        }
+      }
       formData.append('action', currentAction);
       formData.append('type', formData.get('entryPrice') ? 'limit' : 'market');
       fetch('/api/trade', {
@@ -215,7 +228,6 @@ document.addEventListener('DOMContentLoaded', function() {
       })
       .then(function(response) {
         if (response.ok) {
-          // ใช้ entryPrice ที่ผู้ใช้กรอกในฟอร์ม ไม่ override ด้วยราคากราฟ
           var entryPrice = formData.get('entryPrice');
           var lot = formData.get('lot') || '0.01';
           var action = formData.get('action') || currentAction;
@@ -381,7 +393,36 @@ function loadRecentTrades() {
 }
 
 function loadOpenPositions() {
-  // TODO: Implement loading open positions
+  const tournamentId = getTournamentId && getTournamentId();
+  if (!tournamentId) return;
+  const openPositionsDiv = document.getElementById('openPositions');
+  if (!openPositionsDiv) return;
+  openPositionsDiv.innerHTML = '<p class="text-muted text-center">Loading open positions...</p>';
+  fetch(`/api/positions?tournamentId=${tournamentId}`)
+    .then(res => res.json())
+    .then(data => {
+      if (!data.success || !data.positions || !data.positions.length) {
+        openPositionsDiv.innerHTML = '<p class="text-muted text-center">No open positions</p>';
+        return;
+      }
+      let html = '';
+      data.positions.forEach(pos => {
+        const action = pos.action ? pos.action.toUpperCase() : '';
+        const lot = pos.lot || '';
+        const entry = pos.entryPrice !== undefined && pos.entryPrice !== null ? pos.entryPrice : '-';
+        const time = pos.createdAt ? new Date(pos.createdAt).toLocaleTimeString('en-GB', { hour12: false }) : '';
+        html += `<div class="open-position-item mb-2">
+          <span class="badge ${action === 'BUY' ? 'bg-success' : 'bg-danger'}">${action}</span>
+          <span class="ms-2">${time}</span>
+          <span class="ms-2">Lot: ${lot} | Entry: ${entry}</span>
+        </div>`;
+      });
+      openPositionsDiv.innerHTML = html;
+    })
+    .catch(() => {
+      openPositionsDiv.innerHTML = '<p class="text-danger text-center">Error loading open positions</p>';
+    });
+}
 }
 
 // Initialize
@@ -582,6 +623,46 @@ document.addEventListener('DOMContentLoaded', function() {
             close: bar.close
           }));
           candleSeries.setData(ohlc);
+          // --- Custom price grid lines (MT5 style) ---
+          // ลบเส้นแนวนอนเดิมทั้งหมดก่อน (ถ้ามี)
+          if (window.customPriceLines && Array.isArray(window.customPriceLines)) {
+            window.customPriceLines.forEach(line => candleSeries.removePriceLine(line));
+          }
+          window.customPriceLines = [];
+          // หา min/max ของกราฟ
+          let min = Math.min(...ohlc.map(b => b.low));
+          let max = Math.max(...ohlc.map(b => b.high));
+          // ปัด min ลง, max ขึ้น ให้ตรงจุดทศนิยม 3 ตำแหน่ง
+          min = Math.floor(min * 1000) / 1000;
+          max = Math.ceil(max * 1000) / 1000;
+          // วาดเส้นทุก step 0.001
+          const step = 0.001;
+          for (let price = min; price <= max; price = +(price + step).toFixed(3)) {
+            const line = candleSeries.createPriceLine({
+              price: price,
+              color: '#bdbdbd',
+              lineWidth: 1,
+              lineStyle: LightweightCharts.LineStyle.Dotted,
+              axisLabelVisible: true,
+              title: price.toFixed(3) // แสดง 3 ตำแหน่งอัตโนมัติ
+            });
+            window.customPriceLines.push(line);
+          }
+          // --- Last price line ---
+          const lastBar = ohlc[ohlc.length - 1];
+          if (lastBar && candleSeries.createPriceLine) {
+            if (window.lastPriceLine) {
+              candleSeries.removePriceLine(window.lastPriceLine);
+            }
+            window.lastPriceLine = candleSeries.createPriceLine({
+              price: lastBar.close,
+              color: 'red',
+              lineWidth: 2,
+              lineStyle: LightweightCharts.LineStyle.Solid,
+              axisLabelVisible: true,
+              title: 'Last Price'
+            });
+          }
         }
       });
   }
