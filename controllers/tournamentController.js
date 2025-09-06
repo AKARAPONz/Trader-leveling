@@ -7,7 +7,7 @@ exports.createTournament = async (req, res) => {
     return res.status(403).send('Access denied. Admin only.');
   }
 
-  const { name, balance, start, end } = req.body;
+  const { name, balance, start, end, status } = req.body;
 
   try {
     const newTournament = new Tournament({
@@ -15,6 +15,7 @@ exports.createTournament = async (req, res) => {
       balance,
       start,
       end,
+      status
     });
 
     await newTournament.save();
@@ -31,10 +32,10 @@ exports.getTournaments = async (req, res) => {
     // ดึงรายการ tournament ทั้งหมดและเรียงจาก start date ลดหลั่น
     const tournaments = await Tournament.find().sort({ start: -1 });
 
-    // หา tournament ล่าสุดที่สถานะ running หรือ complete (เริ่มแล้ว)
-    const latestRunningOrCompleted = tournaments.find(t => {
+    // หา tournament ล่าสุดที่สถานะ running หรือ END (เริ่มแล้ว)
+    const latestRunningOrEnd = tournaments.find(t => {
       const now = new Date();
-      return now >= new Date(t.start); // started or completed
+      return now >= new Date(t.start); // started or END
     });
 
     // คำนวณสถานะของแต่ละ tournament
@@ -49,7 +50,7 @@ exports.getTournaments = async (req, res) => {
       } else if (now >= start && now <= end) {
         status = 'RUNNING';
       } else {
-        status = 'COMPLETE';
+        status = 'END';
       }
       
       return {
@@ -62,7 +63,7 @@ exports.getTournaments = async (req, res) => {
       tournaments: tournamentsWithStatus,
       user: req.session.user,
       loggedIn: !!req.session.user,
-      latestTournamentId: latestRunningOrCompleted ? latestRunningOrCompleted._id : null
+      latestTournamentId: latestRunningOrEnd ? latestRunningOrEnd._id : null
     });
   } catch (err) {
     console.error('Get Tournaments Error:', err);
@@ -77,7 +78,7 @@ exports.updateTournament = async (req, res) => {
     return res.status(403).send('Access denied. Admin only.');
   }
 
-  const { tournamentId, name, balance, start, end } = req.body;
+  const { tournamentId, name, balance, start, end, status } = req.body;
 
   try {
     await Tournament.findByIdAndUpdate(tournamentId, {
@@ -85,6 +86,7 @@ exports.updateTournament = async (req, res) => {
       balance,
       start,
       end,
+      status
     });
 
     res.redirect('/tournament');

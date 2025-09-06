@@ -199,12 +199,12 @@
       <div class="user-info">
         <div class="user-details">
           <h4>Trade</h4>
-          <small>
-            Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
-            EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
-            Role: <%= user.role || 'guest' %>, @<%= user.username || user.name || user.email || 'Guest' %> <br />
-            <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
-          </small>
+            <small>
+              Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
+              EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
+              Role: <span class="badge badge-<%= user.role === 'admin' ? 'danger' : user.role === 'trader' ? 'success' : 'secondary' %>"><%= user.role || 'Guest' %></span> | @<%= user.username || 'Guest' %> <br /> | 
+              <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
+            </small>
         </div>
       </div>
       <img src="<%= user.profileImage + '?v=' + Date.now() %>" class="avatar" alt="Profile" />
@@ -233,8 +233,8 @@
                 <strong>Status:</strong> 
                 <% if (tournamentStatus === 'RUNNING') { %>
                   <span class="badge badge-success">RUNNING</span>
-                <% } else if (tournamentStatus === 'COMPLETE') { %>
-                  <span class="badge badge-secondary">COMPLETE</span>
+                <% } else if (tournamentStatus === 'END') { %>
+                  <span class="badge badge-secondary">END</span>
                 <% } else { %>
                   <span class="badge badge-primary">REGISTRATION</span>
                 <% } %>
@@ -366,10 +366,10 @@
                     <button type="submit" class="btn btn-primary w-100" id="submitBtn">
                       <i class="bi bi-send"></i> Place Order
                     </button>
-                  <% } else if (tournamentStatus === 'COMPLETE') { %>
+                  <% } else if (tournamentStatus === 'END') { %>
                     <div class="alert alert-info text-center">
                       <i class="bi bi-info-circle"></i>
-                      <strong>Tournament Completed</strong><br>
+                      <strong>Tournament End</strong><br>
                       <small>Trading is no longer available for this tournament.</small>
                     </div>
                   <% } else { %>

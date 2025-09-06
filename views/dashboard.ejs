@@ -18,7 +18,6 @@
         Trader Leveling
       </a>
     </div>
-    
     <nav class="nav-menu">
       <div class="nav-item">
         <a href="/" class="nav-link">
@@ -89,17 +88,12 @@
       <div class="user-info">
         <div class="user-details">
           <h4>Dashboard</h4>
-          <small>
-            Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
-            EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
-            Role: <%= user.role || 'guest' %>, @<%= user.username || 'Guest' %> <br />
-            <%= new Date().toLocaleDateString('en-GB', {
-              weekday: 'short',
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric'
-            }) %>
-          </small>
+            <small>
+              Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
+              EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
+              Role: <span class="badge badge-<%= user.role === 'admin' ? 'danger' : user.role === 'trader' ? 'success' : 'secondary' %>"><%= user.role || 'Guest' %></span> | @<%= user.username || 'Guest' %> <br /> | 
+              <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
+            </small>
         </div>
       </div>
       <img src="<%= user.profileImage + '?v=' + Date.now() %>" class="avatar" alt="Profile" />
@@ -206,8 +200,8 @@
                   <strong>Status:</strong> 
                   <% if (tournamentStatus === 'RUNNING') { %>
                     <span class="badge badge-success">RUNNING</span>
-                  <% } else if (tournamentStatus === 'COMPLETE') { %>
-                    <span class="badge badge-secondary">COMPLETE</span>
+                  <% } else if (tournamentStatus === 'END') { %>
+                    <span class="badge badge-secondary">END</span>
                   <% } else { %>
                     <span class="badge badge-primary">REGISTRATION</span>
                   <% } %>

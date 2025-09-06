@@ -93,7 +93,7 @@
             <small>
               Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
               EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
-              Role: <span class="badge badge-<%= user.role === 'admin' ? 'danger' : user.role === 'trader' ? 'success' : 'secondary' %>"><%= user.role || 'guest' %></span> | 
+              Role: <span class="badge badge-<%= user.role === 'admin' ? 'danger' : user.role === 'trader' ? 'success' : 'secondary' %>"><%= user.role || 'Guest' %></span> | @<%= user.username || 'Guest' %> <br /> | 
               <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
             </small>
           </div>
@@ -228,7 +228,7 @@
                 <input type="file" class="form-control" id="profileImage" name="profileImage" />
               </div>
               <button type="submit" class="btn btn-primary w-100 mt-3">
-                <i class="bi bi-save"></i> Update Profile
+                </i> Update Profile
               </button>
             </form>
           </div>

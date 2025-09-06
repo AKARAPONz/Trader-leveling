@@ -90,12 +90,12 @@
       <div class="user-info">
         <div class="user-details">
           <h4>Home</h4>
-          <small>
-            Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
-            EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
-            Role: <%= user.role || 'guest' %>, @<%= user.username || 'Guest' %> <br />
-            <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
-          </small>
+            <small>
+              Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
+              EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
+              Role: <span class="badge badge-<%= user.role === 'admin' ? 'danger' : user.role === 'trader' ? 'success' : 'secondary' %>"><%= user.role || 'Guest' %></span> | @<%= user.username || 'Guest' %> <br /> | 
+              <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
+            </small>
         </div>
       </div>
       <img src="<%= user.profileImage || '/default-avatar.png' %>?v=<%= Date.now() %>" class="avatar" alt="Profile" />

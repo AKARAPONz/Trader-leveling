@@ -69,7 +69,7 @@ exports.getTradePage = async (req, res) => {
     
     let tournamentStatus = '';
     if (now > end) {
-      tournamentStatus = 'COMPLETE';
+      tournamentStatus = 'END';
     } else if (now >= start && now <= end) {
       tournamentStatus = 'RUNNING';
     } else {

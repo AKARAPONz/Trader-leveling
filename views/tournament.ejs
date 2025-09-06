@@ -91,12 +91,12 @@
       <div class="user-info">
         <div class="user-details">
           <h4>Tournament</h4>
-          <small>
-            Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
-            EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
-            Role: <%= user.role || 'guest' %>, @<%= user.username || 'Guest' %> <br />
-            <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
-          </small>
+            <small>
+              Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
+              EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
+              Role: <span class="badge badge-<%= user.role === 'admin' ? 'danger' : user.role === 'trader' ? 'success' : 'secondary' %>"><%= user.role || 'Guest' %></span> | @<%= user.username || 'Guest' %> <br /> | 
+              <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
+            </small>
         </div>
       </div>
       <img src="<%= user.profileImage + '?v=' + Date.now() %>" class="avatar" alt="Profile" />
@@ -144,18 +144,17 @@
                 <tr data-tournament-id="<%= t._id %>">
                   <td><%= t.name %></td>
                   <td>$<%= t.balance %></td>
-                  <td><%= t.assets.join(', ') %></td>
                   <td style="white-space:nowrap;">
-                  <%= start.toLocaleString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZoneName: 'short' }) %>
-                  <br><span style="font-size:0.9em;color:#888;">(Indonesia Time Zone)</span>
+                    <%= start.toLocaleString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'}) %>
+                    <br><span style="font-size:0.9em;color:#888;">(Indonesia Time Zone)</span>
                   </td>
                   <td style="white-space:nowrap;">
-                  <%= end.toLocaleString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZoneName: 'short' }) %>
-                  <br><span style="font-size:0.9em;color:#888;">(Indonesia Time Zone)</span>
+                    <%= end.toLocaleString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'}) %>
+                    <br><span style="font-size:0.9em;color:#888;">(Indonesia Time Zone)</span>
                   </td>
                   <td>
-                    <% if (t.status === 'COMPLETE') { %>
-                      <span class="badge badge-secondary">COMPLETE</span>
+                    <% if (t.status === 'END') { %>
+                      <span class="badge badge-danger">END</span>
                     <% } else if (t.status === 'RUNNING') { %>
                       <span class="badge badge-success">RUNNING</span>
                     <% } else { %>
@@ -175,8 +174,10 @@
                       <span id="joinStatus-<%= t._id %>" class="badge badge-secondary" style="display:none;">Loading...</span>
                     <% } %>
                     <% if (user.role === 'admin') { %>
-                      <button class="btn btn-secondary btn-sm" onclick="openEditModal('<%= t._id %>', '<%= t.name %>', '<%= t.balance %>', '<%= t.assets.join(', ') %>', '<%= t.start %>', '<%= t.end %>')">Edit</button>
-                      <button class="btn btn-info btn-sm" onclick="viewRequests('<%= t._id %>')">Requests</button>
+                      <% if (t.status !== 'END') { %>
+                        <button class="btn btn-secondary btn-sm" onclick="openEditModal('<%= t._id %>', '<%= t.name %>', '<%= t.balance %>', '<%= t.assets ? t.assets.join(', ') : '' %>', '<%= t.start %>', '<%= t.end %>')">Edit</button>
+                        <button class="btn btn-info btn-sm" onclick="viewRequests('<%= t._id %>')">Requests</button>
+                      <% } %>
                       <form method="POST" action="/tournament/delete/<%= t._id %>" style="display:inline">
                         <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this tournament?')">Delete</button>
                       </form>

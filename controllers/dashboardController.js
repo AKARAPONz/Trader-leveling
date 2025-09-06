@@ -27,13 +27,13 @@ exports.index = async (req, res) => {
 
   const now = new Date();
   const isRunning = now >= tournament.start && now <= tournament.end;
-  const isComplete = now > tournament.end;
+  const isEnd = now > tournament.end;
 
-  if (!isRunning && !isComplete) {
+  if (!isRunning && !isEnd) {
     return res.redirect('/tournament');
   }
 
-  const isClosed = isComplete;
+  const isClosed = isEnd;
 
   // ดึง trade log เฉพาะ action ที่เกี่ยวข้อง
   const validActions = ['buy', 'sell', 'close-buy', 'close-sell'];
@@ -125,7 +125,7 @@ exports.index = async (req, res) => {
     user: req.session.user,
     tournamentId,
     tournament, // เพิ่ม tournament
-    tournamentStatus: isComplete ? 'COMPLETE' : 'RUNNING',
+    tournamentStatus: isEnd ? 'END' : 'RUNNING',
     tradeHistory,
     isClosed,
     winner,
