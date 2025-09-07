@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
+  <!-- ส่วนหัว: meta, title, css, font, style, js -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Trader Leveling</title>
@@ -15,7 +16,7 @@
       }
 </style>
 <body>
-  <!-- Sidebar -->
+  <!-- Sidebar: เมนูด้านข้าง -->
   <div class="sidebar">
     <div class="sidebar-header">
       <a href="/" class="brand">
@@ -30,18 +31,21 @@
           Home
         </a>
       </div>
+      <% if (user.role === 'admin' || user.role === 'trader') { %>
       <div class="nav-item">
         <a href="/dashboard" class="nav-link">
           <i class="bi bi-grid-1x2"></i>
           Dashboard
         </a>
       </div>
+      <% } %>
       <div class="nav-item">
         <a href="/tournament" class="nav-link">
           <i class="bi bi-trophy"></i>
           Tournament
         </a>
       </div>
+      <% if (user.role === 'admin' || user.role === 'trader') { %>
       <div class="nav-item">
         <a href="/trade" class="nav-link">
           <i class="bi bi-graph-up"></i>
@@ -54,6 +58,7 @@
           Profile
         </a>
       </div>
+      <% } %>
       <% if (user.role === 'admin') { %>
         <div class="nav-item">
           <a href="/admin/users" class="nav-link">
@@ -84,7 +89,7 @@
     </div>
   </div>
 
-  <!-- Main Content -->
+  <!-- Main Content: เนื้อหาหลักของหน้า index -->
   <div class="main">
     <div class="topbar">
       <div class="user-info">
@@ -103,7 +108,7 @@
 
     <div class="content">
 
-      <!-- User Level Info -->
+      <!-- User Level Info: แสดงระดับและ exp -->
       <div class="card mb-4">
         <div class="card-header">
           <h5><i class="bi bi-star"></i> Level & Experience</h5>
@@ -135,7 +140,7 @@
         </div>
       </div>
 
-      <!-- Asset Selection -->
+      <!-- Asset Selection: เลือกสินทรัพย์ -->
       <div class="card mb-4">
         <div class="card-header">
           <h5 class="card-title">
@@ -227,12 +232,12 @@
         </div>
       </div>
 
-      <!-- Trading Chart -->
+      <!-- Trading Chart: กราฟ TradingView -->
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
           <h5 class="card-title">
             <i class="bi bi-graph-up-arrow"></i>
-            กราฟราคา
+            Trading Chart
           </h5>
           <div class="d-flex gap-2">
             <button class="btn btn-primary btn-sm" onclick="toggleFullscreen()">

@@ -1,3 +1,4 @@
+// Import และตั้งค่าต่าง ๆ ของ Express, MongoDB, Socket.io
 const express = require('express');
 const app = express();
 const ejs = require('ejs');
@@ -12,10 +13,10 @@ const OpenPosition = require('./models/openPosition');
 const TradeLog = require('./models/tradeLog');
 const axios = require('axios');
 
-// Configure multer for handling multipart/form-data
+// ตั้งค่า multer สำหรับ multipart/form-data
 const upload = multer();
 
-// MongoDB Connection
+// เชื่อมต่อ MongoDB
 mongoose.connect('mongodb+srv://admin:1234@cluster0.dczs0k3.mongodb.net/', {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -27,7 +28,7 @@ mongoose.connect('mongodb+srv://admin:1234@cluster0.dczs0k3.mongodb.net/', {
   console.error('❌ MongoDB connection error:', err);
 });
 
-// MongoDB connection event handlers
+// Event handler ของ mongoose
 mongoose.connection.on('connected', () => {
   // console.log('✅ Mongoose connected to MongoDB');
 });
@@ -40,10 +41,10 @@ mongoose.connection.on('disconnected', () => {
   // console.log('⚠️ Mongoose disconnected from MongoDB');
 });
 
-// Global session flag
+// ตัวแปร global สำหรับ session
 global.loggedIn = null;
 
-// Controllers
+// Import controllers และ routes
 const indexController = require('./controllers/indexController');
 const loginController = require('./controllers/loginController');
 const registerController = require('./controllers/registerController');
@@ -55,7 +56,7 @@ const dashboardRoutes = require('./routes/dashboardRoutes');      // Import dash
 const tournamentRoutes = require('./routes/tournamentRoutes');
 const tradeRoutes = require('./routes/tradeRoutes');
 
-// Middleware
+// Middleware สำหรับ auth และ guest
 const redirectIfAuth = require('./middleware/redirectIfAuth');
 const authMiddleware = require('./middleware/authMiddleware');
 const guestMiddleware = require('./middleware/guestMiddleware');
@@ -69,7 +70,7 @@ app.use('/api', require('./routes/api/marketPrices'));
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
-// Session and flash
+// Session และ flash message
 app.use(flash());
 app.use(expressSession({
   secret: "node secret",
@@ -77,26 +78,26 @@ app.use(expressSession({
   saveUninitialized: false
 }));
 
-// Local variable for view
+// Local variable สำหรับ view
 app.use((req, res, next) => {
   res.locals.loggedIn = !!req.session.user;
   next();
 });
 
-// View engine
+// ตั้งค่า view engine เป็น EJS
 app.set('view engine', 'ejs');
 
 // แชร์ io ให้ routes ใช้งานได้
 app.set('io', io);
 
-// Join room สำหรับ tournament ผ่าน socket.io
+// Socket.io: join room สำหรับ tournament
 io.on('connection', (socket) => {
   socket.on('joinTournament', (tournamentId) => {
     socket.join(tournamentId);
   });
 });
 
-// Routes
+// Routes หลักของแอป
 app.get('/', indexController);
 app.get('/login', redirectIfAuth, loginController);
 app.get('/register', redirectIfAuth, registerController);
@@ -111,7 +112,7 @@ app.use('/trade', guestMiddleware, tradeRoutes);
 app.use('/profile', guestMiddleware, profileController);
 app.use('/admin', guestMiddleware, require('./routes/adminRoutes'));
 
-// API routes with multer middleware for multipart/form-data
+// API routes พร้อม multer middleware
 app.use('/api/trade', upload.any(), require('./routes/api/trade'));
 app.use('/api/tournament-request', require('./routes/api/tournamentRequests'));
 app.use('/api/tournament-actions', require('./routes/api/tournament-actions'));
@@ -119,6 +120,7 @@ app.use('/api/close-position', require('./routes/api/close-position'));
 app.use('/api/user-level', require('./routes/api/user-level'));
 app.use('/api/tournament-join', require('./routes/api/tournament-join'));
 
+// ฟังก์ชันดึงราคาตลาดจาก backend (ใช้ axios)
 async function getMarketPrice(symbol) {
   try {
     if (!symbol) {
@@ -143,6 +145,7 @@ async function getMarketPrice(symbol) {
   }
 }
 
+// เรียกใช้งาน worker สำหรับ auto close position
 const startAutoCloseWorker = require('./scripts/autoCloseWorker');
 startAutoCloseWorker({ OpenPosition, TradeLog, getMarketPrice });
 

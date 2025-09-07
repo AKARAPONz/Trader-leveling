@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -159,9 +159,6 @@
     <script src="/js/tournament.js"></script>
   </head>
   <body>
-    <div class="theme-toggle" id="theme-toggle">
-      <i class="bi bi-moon-fill"></i>
-    </div>
     <div class="tournament-container">
       <div class="tournament-header">
         <h1><i class="bi bi-trophy-fill"></i> Tournament</h1>
@@ -174,22 +171,6 @@
       </div>
     </div>
     <script>
-      // Theme toggle functionality
-      const themeToggle = document.getElementById('theme-toggle');
-      themeToggle.addEventListener('click', () => {
-        const currentTheme = document.documentElement.getAttribute('data-theme');
-        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', newTheme);
-        // Save user preference to server
-        fetch('/api/user/theme', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ theme: newTheme }),
-        });
-      });
-
       // Fetch and display tournaments
       async function fetchTournaments() {
         try {

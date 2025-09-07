@@ -8,6 +8,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+      :root {
+        --primary-color: #0d6efd;
+      }
       body {
         margin: 0;
         padding: 0;
@@ -24,7 +27,7 @@
         border-radius: var(--radius-lg);
         box-shadow: var(--shadow-xl);
         width: 100%;
-        max-width: 400px;
+        max-width: 450px;
         overflow: hidden;
         animation: slideIn 0.5s ease;
       }
@@ -120,12 +123,6 @@
         transition: all 0.2s ease;
       }
 
-      .btn-login:hover {
-        background-color: var(--primary-hover);
-        transform: translateY(-1px);
-        box-shadow: var(--shadow-md);
-      }
-
       .login-footer {
         text-align: center;
         padding: 1rem 2rem 2rem;
@@ -139,9 +136,6 @@
         font-size: 0.875rem;
       }
 
-      .login-footer a:hover {
-        text-decoration: underline;
-      }
 
       @keyframes slideIn {
         from {
@@ -162,7 +156,7 @@
         background: var(--bg-primary);
         border-radius: var(--radius-lg);
         box-shadow: var(--shadow-md);
-        margin: 1rem 0;
+        margin-bottom: 1.5rem;
       }
 
       .nav-item {
@@ -180,10 +174,6 @@
         transition: all 0.2s ease;
       }
 
-      .nav-link:hover {
-        background: var(--bg-secondary);
-        color: var(--primary-color);
-      }
 
       .bi {
         flex-shrink: 0;
@@ -195,7 +185,7 @@
   </head>
   <body data-error-message="<%= typeof messages !== 'undefined' && messages.error && messages.error.length > 0 ? messages.error[0] : '' %>" data-success-message="<%= typeof messages !== 'undefined' && messages.success && messages.success.length > 0 ? messages.success[0] : '' %>">
 
-    <!-- Login Container -->
+    <!-- Login Container: กล่องฟอร์ม login -->
     <div class="login-container">
       <div class="login-header">
         <h1>
@@ -206,6 +196,7 @@
       </div>
 
       <div class="login-body">
+        <!-- ฟอร์ม login -->
         <form action="/user/login" method="post">
           <div class="form-group">
             <label for="username" class="form-label">Username</label>
@@ -230,11 +221,10 @@
             </button>
           </div>
         </form>
-      </div>
 
       <div class="login-footer">
-        <p>ยังไม่มีบัญชี? <a href="/register">สมัครสมาชิก</a></p>
         <p>เข้าสู่ระบบแบบ <a href="/">Guest</a></p>
+        <p>ยังไม่มีบัญชี? <a href="/register">สมัครสมาชิก</a></p>
       </div>
     </div>
   </body>

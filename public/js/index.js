@@ -1,9 +1,14 @@
-let currentTheme = "light";
+// ตัวแปรสำหรับจัดการ symbol และราคาปัจจุบัน
 let currentSymbol = null;
 let lastKnownPrice = null; // Store last known price for fallback
 
+// ฟังก์ชันโหลดข้อมูลราคาและแสดงบนหน้าเว็บ
 async function loadAsset(symbol) {
-  if (!symbol) return;
+  // Validate symbol is a string
+  if (typeof symbol !== 'string' || !symbol.trim()) {
+    console.warn('Invalid symbol:', symbol);
+    return;
+  }
 
   currentSymbol = symbol;
   
@@ -13,6 +18,7 @@ async function loadAsset(symbol) {
   priceElement.className = "badge badge-warning";
 
   try {
+    // ดึงราคาจาก backend
     const res = await fetch(`/api/price?symbol=${encodeURIComponent(symbol)}`);
     
     if (!res.ok) {
@@ -57,9 +63,10 @@ async function loadAsset(symbol) {
     }
   }
 
-  renderChart(symbol);
+  createTradingViewWidget(symbol);
 }
 
+// ฟังก์ชันแสดง error ในช่องราคา
 function handlePriceError(message, errorType) {
   const priceElement = document.getElementById("current-price");
   priceElement.textContent = message;
@@ -73,73 +80,52 @@ function handlePriceError(message, errorType) {
   }
 }
 
+// ฟังก์ชันโหลด symbol ที่ custom input
 function loadCustomAsset() {
-  const customSymbolInput = document.getElementById('customSymbol');
-  const symbol = customSymbolInput.value.trim();
-  
+  const symbol = document.getElementById('customSymbol').value.trim();
   if (!symbol) {
-    alert('กรุณาใส่สัญลักษณ์ที่ต้องการค้นหา');
+    alert('กรุณาใส่สัญลักษณ์');
     return;
   }
-  
-  // Basic validation
-  if (symbol.length < 2 || symbol.length > 20) {
-    alert('สัญลักษณ์ต้องมีความยาว 2-20 ตัวอักษร');
-    return;
-  }
-  
-  // Clean the symbol (remove special characters except /)
-  const cleanSymbol = symbol.replace(/[^A-Za-z0-9/]/g, '').toUpperCase();
-  
-  if (cleanSymbol !== symbol.toUpperCase()) {
-    alert('สัญลักษณ์มีอักขระที่ไม่ถูกต้อง กรุณาใช้เฉพาะตัวอักษร ตัวเลข และ / เท่านั้น');
-    return;
-  }
-  
-  loadAsset(cleanSymbol);
-  customSymbolInput.value = ''; // Clear input after search
+  createTradingViewWidget(symbol);
 }
 
+// สร้าง TradingView widget สำหรับกราฟ
+function createTradingViewWidget(symbol) {
+  // Remove previous widget if exists
+  if (window.tvWidget) {
+    window.tvWidget.remove();
+    window.tvWidget = null;
+  }
 
+  // Validate symbol and interval
+  const validSymbol = typeof symbol === 'string' ? symbol : 'AAPL';
+  const interval = '1'; // default interval as string
 
-function renderChart(symbol) {
-  document.getElementById("dynamic-graph").innerHTML = '';
+  // ตรวจสอบว่ามี div id="dynamic-graph" จริงหรือไม่
+  const container = document.getElementById("dynamic-graph");
+  if (!container) {
+    console.error('❌ ไม่พบ div id="dynamic-graph" ในหน้า index.ejs');
+    return;
+  }
 
-  new TradingView.widget({
-    "container_id": "dynamic-graph",
-    "autosize": true,
-    "symbol": symbol.replace('/', ''),
-    "interval": "1",
-    "timezone": "Asia/Bangkok",
-    "theme": currentTheme,
-    "style": 1,
-    "locale": "en",
-    "toolbar_bg": currentTheme === "dark" ? "#1e293b" : "#f8fafc",
-    "enable_publishing": false,
-    "hide_legend": false,
-    "allow_symbol_change": true
+  window.tvWidget = new TradingView.widget({
+    symbol: validSymbol,
+    interval: interval,
+    container_id: "dynamic-graph",
+    autosize: true,
+    timezone: "Asia/Bangkok",
+    style: 1,
+    locale: "en",
+    enable_publishing: false,
+    hide_legend: false,
+    allow_symbol_change: true,
+    width: "100%",
+    height: 500,
   });
 }
 
-function toggleTheme() {
-  const html = document.documentElement;
-  const themeButton = document.querySelector('[onclick="toggleTheme()"] i');
-  
-  if (html.getAttribute('data-theme') === 'light') {
-    html.setAttribute('data-theme', 'dark');
-    currentTheme = "dark";
-    themeButton.className = "bi bi-sun";
-  } else {
-    html.setAttribute('data-theme', 'light');
-    currentTheme = "light";
-    themeButton.className = "bi bi-moon";
-  }
-
-  if (currentSymbol) {
-    renderChart(currentSymbol);
-  }
-}
-
+// ฟังก์ชันเปิด/ปิด fullscreen สำหรับกราฟ
 function toggleFullscreen() {
   const el = document.getElementById("dynamic-graph");
   if (!document.fullscreenElement) {
@@ -155,6 +141,7 @@ function toggleFullscreen() {
   }
 }
 
+// ฟังก์ชันโหลดข้อมูล level/exp ของ user
 async function loadUserLevelInfo() {
   try {
     const response = await fetch('/api/user-level');
@@ -205,6 +192,7 @@ async function loadUserLevelInfo() {
 
 // Initialize with default asset
 document.addEventListener('DOMContentLoaded', function() {
+  // โหลด asset เริ่มต้น
   loadAsset('AAPL');
   loadUserLevelInfo();
   
@@ -217,4 +205,4 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
-}); 
+});

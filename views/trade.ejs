@@ -117,6 +117,7 @@
       transition: width 0.3s ease;
     }
   </style>
+  <script src="https://s3.tradingview.com/tv.js"></script>
 </head>
 <body data-initial-symbol="<%= tournament ? tournament.assets[0] : '' %>" data-has-tournament="<%= tournament ? 'true' : 'false' %>" data-tournament-id="<%= tournament ? tournament._id : '' %>">
   
@@ -243,38 +244,37 @@
           </div>
         </div>
 
-        <!-- User Level Info -->
-        <div class="card mb-4">
-          <div class="card-header">
-            <h5><i class="bi bi-star"></i> Level & Experience</h5>
-          </div>
-          <div class="card-body">
-            <div class="row">
-              <div class="col-md-6">
-                <div class="d-flex align-items-center mb-2">
-                  <span class="badge badge-primary me-2">Level <span id="currentLevel"><%= user.level || 1 %></span></span>
-                  <span class="text-muted">(<span id="levelName">Loading...</span>)</span>
-                </div>
-                <div class="progress mb-2" style="height: 8px;">
-                  <div id="levelProgress" class="progress-bar" role="progressbar" style="width: 0%"></div>
-                </div>
-                <small class="text-muted">
-                  EXP: <span id="currentExp"><%= user.exp || 0 %></span> / 
-                  <span id="nextLevelExp">Loading...</span> 
-                  (<span id="progressPercent">0</span>%)
-                </small>
+      <!-- User Level Info -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5><i class="bi bi-star"></i> Level & Experience</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="d-flex align-items-center mb-2">
+                <span class="badge badge-primary me-2">Level <span id="currentLevel"><%= user.level || 1 %></span></span>
+                <span class="text-muted">(<span id="levelName">Loading...</span>)</span>
               </div>
-              <div class="col-md-6">
-                <div id="levelBenefits">
-                  <small class="text-muted">
-                    <strong>Benefits:</strong> <span id="benefitsText">Loading...</span>
-                  </small>
-                </div>
+              <div class="progress mb-2" style="height: 8px;">
+                <div id="levelProgress" class="progress-bar" role="progressbar" style="width: 0%"></div>
+              </div>
+              <small class="text-muted">
+                EXP: <span id="currentExp"><%= user.exp || 0 %></span> / 
+                <span id="nextLevelExp">Loading...</span> 
+                (<span id="progressPercent">0</span>%)
+              </small>
+            </div>
+            <div class="col-md-6">
+              <div id="levelBenefits">
+                <small class="text-muted">
+                  <strong>Benefits:</strong> <span id="benefitsText">Loading...</span>
+                </small>
               </div>
             </div>
           </div>
         </div>
-
+      </div>
         <!-- Trading Interface -->
         <div class="row">
           <!-- Chart Section (TradingView Widget) -->
@@ -283,19 +283,16 @@
               <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
                   <h5><i class="bi bi-graph-up"></i> Trading Chart</h5>
-                  <div class="d-flex gap-2">
-                  </div>
                 </div>
               </div>
               <div class="card-body">
-                <div id="lightweightChart" style="height: 500px; width: 100%; position: relative;"></div>
-                <div class="d-flex justify-content-center mt-2">
-                </div>
+                <!-- กราฟ TradingView -->
+                <div id="tradingview_chart" style="height: 500px; width: 100%;"></div>
               </div>
             </div>
           </div>
 
-          <!-- Trading Panel -->
+          <!-- Trading Panel ฟอร์มสำหรับเทรด -->
           <div class="col-4">
             <div class="card mb-4">
               <div class="card-header">
@@ -305,7 +302,7 @@
                 <form id="tradeForm">
                   <input type="hidden" name="tournamentId" value="<%= tournament._id %>">
                   
-                  <!-- Action Selection -->
+                  <!-- Action Selection เลือก buy/sell -->
                   <div class="form-group">
                     <label>Action</label>
                     <div class="d-flex gap-2">
@@ -318,14 +315,10 @@
                     </div>
                   </div>
 
-                  <!-- Type Selection -->
+                  <!-- Type Selection ประเภท order -->
                   <div class="form-group">
                     <label for="orderType">Order Type</label>
-                    <select id="orderType" name="type" class="form-control" onchange="onOrderTypeChange()">
-                      <option value="market">Market</option>
-                      <option value="limit">Limit</option>
-                      <option value="stop">Stop</option>
-                    </select>
+                    <input type="text" id="orderType" name="type" class="form-control" value="Market" readonly>
                   </div>
 
                   <!-- Stop Price (เฉพาะ type=stop) -->
@@ -334,28 +327,29 @@
                     <input type="number" id="stopPrice" name="stopPrice" class="form-control" step="0.00001" placeholder="Stop Price">
                   </div>
 
-                  <!-- Lot Size -->
+                  <!-- Lot Size ขนาด lot -->
                   <div class="form-group">
                     <label for="lotSize">Lot Size</label>
                     <input type="number" id="lotSize" name="lot" class="form-control" value="0.01" min="0.01" max="10" step="0.01" required>
                   </div>
 
-                  <!-- Entry Price -->
+                  <!-- Market Price แสดงราคาปัจจุบันของ symbol ที่เปิดบนกราฟ -->
                   <div class="form-group">
-                    <label for="entryPrice">Entry Price (Optional)</label>
-                    <input type="number" id="entryPrice" name="entryPrice" class="form-control" step="0.00001" placeholder="Market Price">
+                    <label for="entryPrice">Market Price</label>
+                    <input type="text" id="entryPrice" name="entryPrice" class="form-control" readonly style="background-color: #f8fafc;">
+                    <small id="entryPriceRealtime" class="text-muted"></small>
                   </div>
 
                   <!-- Stop Loss -->
                   <div class="form-group">
                     <label for="stopLoss">Stop Loss (Optional)</label>
-                    <input type="number" id="stopLoss" name="stopLoss" class="form-control" step="0.00001" placeholder="Stop Loss Price">
+                    <input type="number" id="stopLoss" name="stopLoss" class="form-control" step="0.00001" placeholder="Stop Loss">
                   </div>
 
                   <!-- Take Profit -->
                   <div class="form-group">
                     <label for="takeProfit">Take Profit (Optional)</label>
-                    <input type="number" id="takeProfit" name="takeProfit" class="form-control" step="0.00001" placeholder="Take Profit Price">
+                    <input type="number" id="takeProfit" name="takeProfit" class="form-control" step="0.00001" placeholder="Take Profit">
                   </div>
 
                   <!-- Submit Button -->
@@ -380,7 +374,7 @@
               </div>
             </div>
 
-            <!-- Recent Trades -->
+            <!-- Recent Trades แสดงรายการเทรดล่าสุด -->
             <div class="card">
               <div class="card-header">
                 <h5><i class="bi bi-clock-history"></i> Recent Trades</h5>
@@ -394,7 +388,7 @@
           </div>
         </div>
 
-        <!-- Open Positions -->
+        <!-- Open Positions แสดงตำแหน่งที่เปิดอยู่ -->
         <div class="card">
           <div class="card-header">
             <h5><i class="bi bi-list-ul"></i> Open Positions</h5>
@@ -472,8 +466,7 @@
     </div>
   </div>
 
-  <script src="/socket.io/socket.io.js"></script> <!-- Add socket.io client library -->
-  <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+  <!-- Script ส่วนจัดการกราฟและราคา -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const theme = localStorage.getItem('theme') || 'light';
@@ -883,17 +876,6 @@
             }
           });
           
-          // Validation เฉพาะแต่ละ type
-          const type = document.getElementById('orderType').value;
-          if (type === 'limit' && !formData.get('entryPrice')) {
-            alert('กรุณากรอก Entry Price สำหรับ Limit Order');
-            return;
-          }
-          if (type === 'stop' && !formData.get('stopPrice')) {
-            alert('กรุณากรอก Stop Price สำหรับ Stop Order');
-            return;
-          }
-          
           const submitBtn = document.getElementById('submitBtn');
           const originalText = submitBtn.innerHTML;
           submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Placing Order...';
@@ -932,6 +914,75 @@
       }
     });
   </script>
+  <script>
+    // เพิ่ม TradingView Chart
+    function loadTradingViewChart(symbol) {
+      // ลบ widget เดิมถ้ามี
+      if (window.tvWidget) {
+        window.tvWidget.remove();
+        window.tvWidget = null;
+      }
+      window.tvWidget = new TradingView.widget({
+        symbol: symbol || 'AAPL',
+        interval: '1',
+        container_id: "tradingview_chart",
+        width: "100%",
+        height: 500,
+        theme: "light",
+        locale: "en",
+        toolbar_bg: "#f8fafc",
+        enable_publishing: false,
+        allow_symbol_change: true,
+        hide_legend: false,
+        autosize: true
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // เรียก TradingView Chart ด้วย symbol แรกของ tournament หรือค่า default
+      const initialSymbol = "<%= tournament && tournament.assets && tournament.assets.length > 0 ? tournament.assets[0] : 'AAPL' %>";
+      loadTradingViewChart(initialSymbol);
+    });
+  </script>
+  <script>
+  // ฟังก์ชันดึงราคาปัจจุบันจาก TradingView widget
+  function updateEntryPriceRealtime() {
+    // ใช้ TradingView widget API (ถ้ามี) หรือ fetch จาก backend
+    const symbol = "<%= tournament && tournament.assets && tournament.assets.length > 0 ? tournament.assets[0] : 'AAPL' %>";
+    fetch(`/api/price?symbol=${encodeURIComponent(symbol)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.price) {
+          document.getElementById('entryPrice').value = data.price;
+          document.getElementById('entryPriceRealtime').textContent = 'Realtime: ' + data.price;
+        } else {
+          document.getElementById('entryPrice').value = '';
+          document.getElementById('entryPriceRealtime').textContent = 'Realtime: -';
+        }
+      })
+      .catch(() => {
+        document.getElementById('entryPrice').value = '';
+        document.getElementById('entryPriceRealtime').textContent = 'Realtime: -';
+      });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    updateEntryPriceRealtime();
+    setInterval(updateEntryPriceRealtime, 3000); // อัปเดตราคาใหม่ทุก 3 วินาที
+
+    // ถ้ามีการเปลี่ยน symbol ให้ดึงราคาใหม่
+    const symbolSelect = document.getElementById('symbolSelect');
+    if (symbolSelect) {
+      symbolSelect.addEventListener('change', function() {
+        window.currentSymbol = symbolSelect.value;
+        updateEntryPriceRealtime();
+      });
+    }
+  });
+</script>
+</body>
+
+</html>
 </body>
 
 </html>

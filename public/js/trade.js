@@ -1,24 +1,12 @@
-let currentAction = 'buy';
-let currentSymbol = '';
-let windowStart = 0; // index เริ่มต้นของ window
-const windowSize = 20; // จำนวนแท่งที่แสดงต่อครั้ง
+// ตัวแปรสำหรับจัดการสถานะการเทรดและกราฟ
+let currentAction = 'buy'; // buy/sell
+let windowStart = 0; // index เริ่มต้นของ window กราฟ
+const windowSize = 20; // จำนวนแท่งกราฟที่แสดง
 let chart;
 let candleSeries;
-let tradeMarkers = [];
+let tradeMarkers = []; // สำหรับ marker buy/sell
 
-function toggleTheme() { 
-  const html = document.documentElement;
-        await fetch('/api/trade/close-position', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ positionId: closePositionId, lotToClose, closePrice })
-    html.setAttribute('data-theme', 'light');
-    themeButton.className = "bi bi-moon";
-  }
-  // Update chart theme
-  initChart();
-}
-
+// เปลี่ยน action buy/sell
 function setAction(action) {
   currentAction = action;
   document.getElementById('buyBtn').classList.toggle('btn-success', action === 'buy');
@@ -27,22 +15,26 @@ function setAction(action) {
   document.getElementById('sellBtn').classList.toggle('btn-outline', action !== 'sell');
 }
 
+// เปลี่ยน symbol ที่เลือก
 function changeSymbol() {
   currentSymbol = document.getElementById('symbolSelect').value;
   windowStart = 0;
   initChart();
 }
 
+// ย้อน window กราฟ
 function prevWindow() {
   windowStart = Math.max(0, windowStart - windowSize);
   fetchOHLCAndSet();
 }
 
+// ไปข้างหน้า window กราฟ
 function nextWindow() {
   windowStart = windowStart + windowSize;
   fetchOHLCAndSet();
 }
 
+// สร้างกราฟใหม่
 function initChart() {
   const container = document.getElementById('lightweightChart');
   if (!container) return;
@@ -50,16 +42,12 @@ function initChart() {
   chart = LightweightCharts.createChart(container, {
     width: container.clientWidth,
     height: 500,
-    layout: {
-      background: { color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#181a20' : '#fff' },
-      textColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#fff' : '#222',
-    },
     grid: { vertLines: { color: '#eee' }, horzLines: { color: '#eee' } },
     timeScale: { timeVisible: true, secondsVisible: false },
     rightPriceScale: {
       borderColor: '#ccc',
-      entireTextOnly: true, // แสดงเฉพาะ label ที่ custom line เท่านั้น
-      ticksVisible: false,  // ไม่ต้องแสดง tick อัตโนมัติ
+      entireTextOnly: true,
+      ticksVisible: false,
       visible: true,
     },
   });
@@ -69,6 +57,7 @@ function initChart() {
   tradeMarkers = [];
 }
 
+// วาด marker buy/sell บนกราฟ
 function markTradeOnChart(action, price, lot) {
   if (!candleSeries) return;
   const bars = candleSeries._bars || [];
@@ -84,11 +73,10 @@ function markTradeOnChart(action, price, lot) {
   candleSeries.setMarkers(tradeMarkers);
 }
 
+// ดึงราคาปิดล่าสุดจากกราฟ
 function getLastClosePriceOnChart() {
-  // ดึงราคาปิดของแท่งสุดท้ายใน window ที่แสดง
   if (!candleSeries) return 0;
   const bars = candleSeries._bars || [];
-  // windowStart, windowSize มีใน scope
   if (bars.length && typeof windowStart !== 'undefined' && typeof windowSize !== 'undefined') {
     const idx = Math.min(windowStart + windowSize - 1, bars.length - 1);
     return bars[idx]?.close || 0;
@@ -96,6 +84,7 @@ function getLastClosePriceOnChart() {
   return 0;
 }
 
+// เพิ่ม tooltip ราคาบนกราฟ
 function addPriceTooltipOverlay(container, chart) {
   let priceTooltip = document.createElement('div');
   priceTooltip.className = 'price-tooltip-overlay';
@@ -127,6 +116,7 @@ function addPriceTooltipOverlay(container, chart) {
   });
 }
 
+// ดึงข้อมูล OHLC จาก backend แล้ว set ลงกราฟ
 function fetchOHLCAndSet() {
   const tournamentId = getTournamentId();
   const symbol = currentSymbol;
@@ -135,7 +125,6 @@ function fetchOHLCAndSet() {
     .then(data => {
       if (data.bars && data.bars.length) {
         let bars = data.bars;
-        // จำกัด windowStart ไม่ให้เกิน 720 - windowSize
         const maxStart = Math.max(0, Math.min(bars.length - windowSize, 720 - windowSize));
         windowStart = Math.max(0, Math.min(windowStart, maxStart));
         const ohlc = bars.slice(windowStart, windowStart + windowSize).map(bar => ({
@@ -150,6 +139,7 @@ function fetchOHLCAndSet() {
     });
 }
 
+// แสดง toast แจ้งผลการเทรด
 function showTradeToast(message, isError) {
   let toast = document.createElement('div');
   toast.className = 'trade-toast';
@@ -175,188 +165,7 @@ function showTradeToast(message, isError) {
   }, 2000);
 }
 
-function loadRecentTrades() {}
-function loadOpenPositions() {}
-
-document.addEventListener('DOMContentLoaded', function() {
-  var initialSymbol = document.body.getAttribute('data-initial-symbol') || '';
-  if (initialSymbol) {
-    currentSymbol = initialSymbol;
-  }
-  var symbolElement = document.getElementById('symbolSelect');
-  if (symbolElement) {
-    currentSymbol = symbolElement.value;
-  }
-  var hasTournament = document.body.getAttribute('data-has-tournament') === 'true';
-  if (hasTournament) {
-    initChart();
-    setAction('buy');
-    checkTournamentStatus();
-  }
-  var tradeForm = document.getElementById('tradeForm');
-  if (tradeForm) {
-    tradeForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      var formData = new FormData(this);
-      var tournamentIdInput = document.querySelector('input[name="tournamentId"]');
-      if (tournamentIdInput && tournamentIdInput.value) {
-        formData.set('tournamentId', tournamentIdInput.value);
-      } else {
-        var urlParams = new URLSearchParams(window.location.search);
-        var urlTournamentId = urlParams.get('tournamentId');
-        if (urlTournamentId) {
-          formData.set('tournamentId', urlTournamentId);
-        }
-      }
-      var symbolSelect = document.getElementById('symbolSelect');
-      if (symbolSelect && symbolSelect.value) {
-        formData.set('symbol', symbolSelect.value);
-      }
-      // ถ้าไม่กรอก entryPrice ให้เติมราคาตลาดล่าสุด
-      var entryPrice = formData.get('entryPrice');
-      if (!entryPrice) {
-        var marketPrice = getLastClosePriceOnChart ? getLastClosePriceOnChart() : null;
-        if (marketPrice) {
-          formData.set('entryPrice', marketPrice);
-        }
-      }
-      formData.append('action', currentAction);
-      formData.append('type', formData.get('entryPrice') ? 'limit' : 'market');
-      fetch('/api/trade', {
-        method: 'POST',
-        body: formData
-      })
-      .then(function(response) {
-        if (response.ok) {
-          var entryPrice = formData.get('entryPrice');
-          var lot = formData.get('lot') || '0.01';
-          var action = formData.get('action') || currentAction;
-          showTradeToast('Order placed successfully!');
-          if (entryPrice) {
-            markTradeOnChart(action, parseFloat(entryPrice), parseFloat(lot));
-          }
-          tradeForm.reset();
-          setAction('buy');
-          loadRecentTrades();
-          loadOpenPositions();
-        } else {
-          return response.text().then(function(text) { 
-            throw new Error(text); 
-          });
-        }
-      })
-      .catch(function(error) {
-        showTradeToast('Error placing order: ' + error.message, true);
-      });
-    });
-  }
-});
-
-function checkTournamentStatus() {
-  const tournamentId = getTournamentId();
-  if (!tournamentId) return;
-  const statusElement = document.querySelector('.badge');
-  if (statusElement) {
-    const status = statusElement.textContent.trim();
-    updateTradeUI(status);
-  }
-}
-
-function updateTradeUI(status) {
-  const submitBtn = document.getElementById('submitBtn');
-  const tradeForm = document.getElementById('tradeForm');
-  if (status === 'COMPLETE') {
-    if (tradeForm) {
-      tradeForm.style.display = 'none';
-    }
-    const timeLeftElement = document.getElementById('timeLeft');
-    if (timeLeftElement) {
-      timeLeftElement.textContent = 'Tournament Completed';
-    }
-  } else if (status === 'REGISTRATION') {
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Tournament Not Started';
-    }
-    const timeLeftElement = document.getElementById('timeLeft');
-    if (timeLeftElement) {
-      timeLeftElement.textContent = 'Registration Phase';
-    }
-  } else if (status === 'RUNNING') {
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = '<i class="bi bi-send"></i> Place Order (Save to MongoDB)';
-    }
-    const timeLeftElement = document.getElementById('timeLeft');
-    if (timeLeftElement) {
-      timeLeftElement.textContent = 'Active Tournament';
-    }
-  }
-}
-
-function getTournamentId() {
-  const tournamentIdInput = document.querySelector('input[name="tournamentId"]');
-  if (tournamentIdInput && tournamentIdInput.value) {
-    return tournamentIdInput.value;
-  }
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get('tournamentId');
-}
-// ...existing code...
-
-function toggleTheme() {
-  const html = document.documentElement;
-  const themeButton = document.querySelector('[onclick="toggleTheme()"] i');
-  if (html.getAttribute('data-theme') === 'light') {
-    html.setAttribute('data-theme', 'dark');
-    themeButton.className = "bi bi-sun";
-  } else {
-    html.setAttribute('data-theme', 'light');
-    themeButton.className = "bi bi-moon";
-  }
-  
-  // Update chart theme
-  if (widget) {
-    widget.setTheme(html.getAttribute('data-theme'));
-  }
-}
-
-function setAction(action) {
-  currentAction = action;
-  document.getElementById('buyBtn').classList.toggle('btn-success', action === 'buy');
-  document.getElementById('buyBtn').classList.toggle('btn-outline', action !== 'buy');
-  document.getElementById('sellBtn').classList.toggle('btn-danger', action === 'sell');
-  document.getElementById('sellBtn').classList.toggle('btn-outline', action !== 'sell');
-}
-
-function changeSymbol() {
-  currentSymbol = document.getElementById('symbolSelect').value;
-  initChart();
-}
-
-  const container = document.getElementById('lightweightChart');
-  container.innerHTML = '';
-  chart = LightweightCharts.createChart(container, {
-    width: container.clientWidth,
-    height: 500,
-    layout: {
-      background: { color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#181a20' : '#fff' },
-      textColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#fff' : '#222',
-    },
-    grid: { vertLines: { color: '#eee' }, horzLines: { color: '#eee' } },
-    timeScale: { timeVisible: true, secondsVisible: false },
-    rightPriceScale: { borderColor: '#ccc' },
-  });
-  candleSeries = chart.addCandlestickSeries();
-  // mock OHLC data
-  fetchOHLCAndSet();
-  // mouse price tooltip
-  addPriceTooltipOverlay(container, chart);
-  // draw markers
-  tradeMarkers = [];
-}
-}
-
+// โหลด recent trades จาก backend
 function loadRecentTrades() {
   // ดึง recent trades จาก backend และแสดงผล
   try {
@@ -392,6 +201,7 @@ function loadRecentTrades() {
   }
 }
 
+// โหลด open positions จาก backend
 function loadOpenPositions() {
   const tournamentId = getTournamentId && getTournamentId();
   if (!tournamentId) return;
@@ -423,8 +233,8 @@ function loadOpenPositions() {
       openPositionsDiv.innerHTML = '<p class="text-danger text-center">Error loading open positions</p>';
     });
 }
-}
 
+// ฟังก์ชันสำหรับ submit ฟอร์มเทรด, ตรวจสอบ tournament, และ UI
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
   // Mouse move price tooltip overlay
@@ -545,199 +355,41 @@ document.addEventListener('DOMContentLoaded', function() {
       .catch(function(error) {
         showTradeToast('Error placing order: ' + error.message, true);
       });
-    // Toast notification for trade result
-    function showTradeToast(message, isError) {
-    // วาด marker buy/sell บน TradingView chart
-  if (!candleSeries) return;
-  // ใช้ bar ล่าสุดเป็นเวลาซื้อ/ขาย
-  const bars = candleSeries._bars || [];
-  let lastBar = bars.length ? bars[bars.length-1] : null;
-  let time = lastBar ? lastBar.time : Math.floor(Date.now()/60)*60;
-  // เพิ่ม marker ลงใน tradeMarkers
-  tradeMarkers.push({
-    time: time,
-    position: action === 'buy' ? 'belowBar' : 'aboveBar',
-    color: action === 'buy' ? '#10b981' : '#ef4444',
-    shape: action === 'buy' ? 'arrowUp' : 'arrowDown',
-    text: (action === 'buy' ? 'BUY' : 'SELL') + ' ' + lot + ' @' + price.toFixed(5)
-  });
-  candleSeries.setMarkers(tradeMarkers);
-}
-    }
-
-    // ดึงราคาปิดล่าสุดจากกราฟ (mock)
-  if (!candleSeries) return 0;
-  const bars = candleSeries._bars || [];
-  if (bars.length) {
-    return bars[bars.length-1].close;
-  }
-  return 0;
-}
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-  // Mouse move price tooltip overlay for lightweight-charts
-  function addPriceTooltipOverlay(container, chart) {
-    let priceTooltip = document.createElement('div');
-    priceTooltip.className = 'price-tooltip-overlay';
-    priceTooltip.style.position = 'absolute';
-    priceTooltip.style.pointerEvents = 'none';
-    priceTooltip.style.background = 'rgba(30,30,30,0.95)';
-    priceTooltip.style.color = '#fff';
-    priceTooltip.style.padding = '2px 10px';
-    priceTooltip.style.borderRadius = '6px';
-    priceTooltip.style.fontSize = '1rem';
-    priceTooltip.style.fontWeight = 'bold';
-    priceTooltip.style.zIndex = 20;
-    priceTooltip.style.display = 'none';
-    container.appendChild(priceTooltip);
-    chart.subscribeCrosshairMove(function(param) {
-      if (param.point && param.seriesPrices && candleSeries) {
-        let price = param.price || param.seriesPrices.get(candleSeries);
-        if (price) {
-          priceTooltip.innerText = price.toFixed(5);
-          priceTooltip.style.left = (param.point.x + 10) + 'px';
-          priceTooltip.style.top = (param.point.y - 18) + 'px';
-          priceTooltip.style.display = 'block';
-        } else {
-          priceTooltip.style.display = 'none';
-        }
-      } else {
-        priceTooltip.style.display = 'none';
-      }
     });
   }
+});
 
-  // ดึง OHLC mock data จาก backend แล้ว set ลงกราฟ
-  function fetchOHLCAndSet() {
-    const tournamentId = getTournamentId();
-    const symbol = currentSymbol;
-    fetch(`/api/trade/ohlc?tournamentId=${tournamentId}&symbol=${symbol}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.bars && data.bars.length) {
-          const ohlc = data.bars.map(bar => ({
-            time: bar.time,
-            open: bar.open,
-            high: bar.high,
-            low: bar.low,
-            close: bar.close
-          }));
-          candleSeries.setData(ohlc);
-          // --- Custom price grid lines (MT5 style) ---
-          // ลบเส้นแนวนอนเดิมทั้งหมดก่อน (ถ้ามี)
-          if (window.customPriceLines && Array.isArray(window.customPriceLines)) {
-            window.customPriceLines.forEach(line => candleSeries.removePriceLine(line));
-          }
-          window.customPriceLines = [];
-          // หา min/max ของกราฟ
-          let min = Math.min(...ohlc.map(b => b.low));
-          let max = Math.max(...ohlc.map(b => b.high));
-          // ปัด min ลง, max ขึ้น ให้ตรงจุดทศนิยม 3 ตำแหน่ง
-          min = Math.floor(min * 1000) / 1000;
-          max = Math.ceil(max * 1000) / 1000;
-          // วาดเส้นทุก step 0.001
-          const step = 0.001;
-          for (let price = min; price <= max; price = +(price + step).toFixed(3)) {
-            const line = candleSeries.createPriceLine({
-              price: price,
-              color: '#bdbdbd',
-              lineWidth: 1,
-              lineStyle: LightweightCharts.LineStyle.Dotted,
-              axisLabelVisible: true,
-              title: price.toFixed(3) // แสดง 3 ตำแหน่งอัตโนมัติ
-            });
-            window.customPriceLines.push(line);
-          }
-          // --- Last price line ---
-          const lastBar = ohlc[ohlc.length - 1];
-          if (lastBar && candleSeries.createPriceLine) {
-            if (window.lastPriceLine) {
-              candleSeries.removePriceLine(window.lastPriceLine);
-            }
-            window.lastPriceLine = candleSeries.createPriceLine({
-              price: lastBar.close,
-              color: 'red',
-              lineWidth: 2,
-              lineStyle: LightweightCharts.LineStyle.Solid,
-              axisLabelVisible: true,
-              title: 'Last Price'
-            });
-          }
-        }
-      });
-  }
-
-  // Set initial symbol from data attributes
-  var initialSymbol = document.body.getAttribute('data-initial-symbol') || '';
-  if (initialSymbol) {
-    currentSymbol = initialSymbol;
-  }
-  var symbolElement = document.getElementById('symbolSelect');
-  if (symbolElement) {
-    currentSymbol = symbolElement.value;
-  }
-  var hasTournament = document.body.getAttribute('data-has-tournament') === 'true';
-  if (hasTournament) {
-    initChart();
-    setAction('buy');
-    checkTournamentStatus();
-  }
-
-  // ...existing code for form submission and other logic...
-}
-
-// Update trade UI based on tournament status
-function updateTradeUI(status) {
-  const submitBtn = document.getElementById('submitBtn');
-  const tradeForm = document.getElementById('tradeForm');
-  
-  if (status === 'COMPLETE') {
-    // Hide trade form and show completion message
-    if (tradeForm) {
-      tradeForm.style.display = 'none';
+// ฟังก์ชันสำหรับโหลดราคา symbol ที่เปิดบนกราฟไปช่อง Market Price
+async function updateEntryPriceRealtime() {
+  const symbol = window.currentSymbol || document.getElementById('symbolSelect')?.value || 'AAPL';
+  try {
+    const res = await fetch(`/api/price?symbol=${encodeURIComponent(symbol)}`);
+    const data = await res.json();
+    if (data && data.price) {
+      document.getElementById('entryPrice').value = data.price;
+      document.getElementById('entryPriceRealtime').textContent = 'Realtime: ' + data.price;
+    } else {
+      document.getElementById('entryPrice').value = '';
+      document.getElementById('entryPriceRealtime').textContent = 'Realtime: -';
     }
-    
-    // Update time left display
-    const timeLeftElement = document.getElementById('timeLeft');
-    if (timeLeftElement) {
-      timeLeftElement.textContent = 'Tournament Completed';
-    }
-  } else if (status === 'REGISTRATION') {
-    // Disable trade form
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Tournament Not Started';
-    }
-    
-    // Update time left display
-    const timeLeftElement = document.getElementById('timeLeft');
-    if (timeLeftElement) {
-      timeLeftElement.textContent = 'Registration Phase';
-    }
-  } else if (status === 'RUNNING') {
-    // Enable trade form
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = '<i class="bi bi-send"></i> Place Order (Save to MongoDB)';
-    }
-    
-    // Update time left display
-    const timeLeftElement = document.getElementById('timeLeft');
-    if (timeLeftElement) {
-      timeLeftElement.textContent = 'Active Tournament';
-    }
+  } catch {
+    document.getElementById('entryPrice').value = '';
+    document.getElementById('entryPriceRealtime').textContent = 'Realtime: -';
   }
 }
 
-// Get tournament ID from various sources
-function getTournamentId() {
-  // Try to get from hidden input
-  const tournamentIdInput = document.querySelector('input[name="tournamentId"]');
-  if (tournamentIdInput && tournamentIdInput.value) {
-    return tournamentIdInput.value;
+// อัปเดตราคา Market Price ทุก 3 วินาที และเมื่อเปลี่ยน symbol
+document.addEventListener('DOMContentLoaded', function() {
+  // ...existing code...
+  updateEntryPriceRealtime();
+  setInterval(updateEntryPriceRealtime, 3000);
+
+  const symbolSelect = document.getElementById('symbolSelect');
+  if (symbolSelect) {
+    symbolSelect.addEventListener('change', function() {
+      window.currentSymbol = symbolSelect.value;
+      updateEntryPriceRealtime();
+    });
   }
-  
-  // Try to get from URL query parameter
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get('tournamentId');
-}
+  // ...existing code...
+});
