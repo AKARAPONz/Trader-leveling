@@ -12,9 +12,6 @@ const OpenPosition = require('./models/openPosition');
 const TradeLog = require('./models/tradeLog');
 const axios = require('axios');
 
-// เพิ่มการ import mt5-data API route
-const mt5DataRoutes = require('./routes/api/mt5-data');
-app.use('/api/mt5-data', mt5DataRoutes);
 // Configure multer for handling multipart/form-data
 const upload = multer();
 
@@ -121,9 +118,6 @@ app.use('/api/tournament-actions', require('./routes/api/tournament-actions'));
 app.use('/api/close-position', require('./routes/api/close-position'));
 app.use('/api/user-level', require('./routes/api/user-level'));
 app.use('/api/tournament-join', require('./routes/api/tournament-join'));
-
-// MT5 Command Queue API for EA polling
-app.use('/api/mt5-command', require('./routes/api/mt5-command'));
 
 async function getMarketPrice(symbol) {
   try {

@@ -9,7 +9,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://s3.tradingview.com/tv.js"></script>
 </head>
-
+<style>
+      :root {
+        --primary-color: #0d6efd;
+      }
+</style>
 <body>
   <!-- Sidebar -->
   <div class="sidebar">
@@ -19,12 +23,17 @@
         Trader Leveling
       </a>
     </div>
-    
-        <nav class="nav-menu">
+    <nav class="nav-menu">
       <div class="nav-item">
-        <a href="/" class="nav-link">
+        <a href="/" class="nav-link active">
           <i class="bi bi-house-door"></i>
           Home
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="/dashboard" class="nav-link">
+          <i class="bi bi-grid-1x2"></i>
+          Dashboard
         </a>
       </div>
       <div class="nav-item">
@@ -33,26 +42,18 @@
           Tournament
         </a>
       </div>
-      <% if (user.role === 'trader' || user.role === 'admin') { %>
-        <div class="nav-item">
-          <a href="/dashboard" class="nav-link">
-            <i class="bi bi-grid-1x2"></i>
-            Dashboard
-          </a>
-        </div>
-        <div class="nav-item">
-          <a href="/trade" class="nav-link">
-            <i class="bi bi-graph-up"></i>
-            Trade
-          </a>
-        </div>
-        <div class="nav-item">
-          <a href="/profile" class="nav-link">
-            <i class="bi bi-person"></i>
-            Profile
-          </a>
-        </div>
-      <% } %>
+      <div class="nav-item">
+        <a href="/trade" class="nav-link">
+          <i class="bi bi-graph-up"></i>
+          Trade
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="/profile" class="nav-link">
+          <i class="bi bi-person"></i>
+          Profile
+        </a>
+      </div>
       <% if (user.role === 'admin') { %>
         <div class="nav-item">
           <a href="/admin/users" class="nav-link">
@@ -62,11 +63,10 @@
         </div>
       <% } %>
     </nav>
-    
     <div class="sidebar-footer">
       <div class="auth-buttons">
         <% if (loggedIn) { %>
-          <a href="/logout" class="btn btn-outline">
+          <a href="/logout" class="btn btn-primary">
             <i class="bi bi-box-arrow-right"></i>
             Logout
           </a>
@@ -75,7 +75,7 @@
             <i class="bi bi-box-arrow-in-right"></i>
             Sign In
           </a>
-          <a href="/register" class="btn btn-secondary">
+          <a href="/register" class="btn btn-primary">
             <i class="bi bi-person-plus"></i>
             Sign Up
           </a>

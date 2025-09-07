@@ -1,11 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const Tournament = require('../../models/tournament');
-const mt5DataController = require('../../controllers/mt5DataController');
-
-// ตัวอย่าง cache หรือดึงข้อมูล OHLC จาก MT5 (ควรปรับตามจริง)
-// สมมุติ MT5 ส่งข้อมูลมาเก็บไว้ใน global (ควรใช้ DB หรือ Redis จริงจัง)
-global.mt5OhlcCache = global.mt5OhlcCache || {};
 
 // GET /api/trade/ohlc
 router.get('/', async (req, res) => {
@@ -16,7 +11,6 @@ router.get('/', async (req, res) => {
     }
     // ดึงข้อมูลจาก cache (หรือ mock ถ้าไม่มี)
     const cacheKey = `${tournamentId}_${symbol}`;
-    let bars = global.mt5OhlcCache[cacheKey] || [];
     // ถ้าไม่มีข้อมูลเลย ให้ mock ข้อมูลแท่งเทียนตัวอย่างสำหรับทดสอบ
     if (!bars.length) {
       const now = Math.floor(Date.now() / 1000);

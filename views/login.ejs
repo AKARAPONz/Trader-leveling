@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -17,23 +17,6 @@
         align-items: center;
         justify-content: center;
         position: relative;
-      }
-
-      .theme-toggle {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        background: var(--bg-primary);
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-md);
-        padding: 0.5rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        z-index: 100;
-      }
-
-      .theme-toggle:hover {
-        background: var(--bg-secondary);
       }
 
       .login-container {
@@ -211,10 +194,6 @@
     <script src="/js/login.js"></script>
   </head>
   <body data-error-message="<%= typeof messages !== 'undefined' && messages.error && messages.error.length > 0 ? messages.error[0] : '' %>" data-success-message="<%= typeof messages !== 'undefined' && messages.success && messages.success.length > 0 ? messages.success[0] : '' %>">
-    <!-- Theme Toggle Button -->
-    <button class="theme-toggle" onclick="toggleTheme()">
-      <i class="bi bi-moon"></i>
-    </button>
 
     <!-- Login Container -->
     <div class="login-container">

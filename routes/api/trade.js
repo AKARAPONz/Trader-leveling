@@ -29,7 +29,6 @@ const { addExp, checkDailyTradeBonus, checkStrategyBonus } = require('../../util
 const axios = require('axios');
 const TournamentUser = require('../../models/tournamentUser');
 
-const mt5DataController = require('../../controllers/mt5DataController'); // New import for MT5 data controller
 const ohlcRouter = require('./ohlc');
 
 // ✅ POST /api/trade
@@ -503,8 +502,6 @@ router.post('/close-position', async (req, res) => {
     res.status(500).json({ error: 'Error closing position' });
   }
 });
-
-router.post('/mt5-data', mt5DataController.receiveMt5Data);
 
 // Mount OHLC API
 router.use('/ohlc', ohlcRouter);

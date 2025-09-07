@@ -7,8 +7,10 @@
   <link href="/css/minimal.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Removed TradingView widget, use lightweight-charts only -->
   <style>
+    :root {
+        --primary-color: #0d6efd;
+      }
     .trade-item, .position-item {
       padding: 0.75rem;
       border-bottom: 1px solid #e2e8f0;
@@ -61,7 +63,6 @@
       transition: width 0.3s ease;
     }
   </style>
-
 
   <style>
     .trade-item, .position-item {
@@ -118,6 +119,8 @@
   </style>
 </head>
 <body data-initial-symbol="<%= tournament ? tournament.assets[0] : '' %>" data-has-tournament="<%= tournament ? 'true' : 'false' %>" data-tournament-id="<%= tournament ? tournament._id : '' %>">
+  
+<body>
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="sidebar-header">
@@ -126,42 +129,37 @@
         Trader Leveling
       </a>
     </div>
-
-        <nav class="nav-menu">
+    <nav class="nav-menu">
       <div class="nav-item">
         <a href="/" class="nav-link">
           <i class="bi bi-house-door"></i>
           Home
         </a>
       </div>
-      <% if (user.role === 'trader' || user.role === 'admin') { %>
-        <div class="nav-item">
-          <a href="/dashboard" class="nav-link active">
-            <i class="bi bi-grid-1x2"></i>
-            Dashboard
-          </a>
-        </div>
-      <% } %>
-        <div class="nav-item">
-          <a href="/tournament" class="nav-link">
-            <i class="bi bi-trophy"></i>
-            Tournament
-          </a>
-        </div>
-      <% if (user.role === 'trader' || user.role === 'admin') { %>
-        <div class="nav-item">
-          <a href="/trade" class="nav-link">
-            <i class="bi bi-graph-up"></i>
-            Trade
-          </a>
-        </div>
-        <div class="nav-item">
-          <a href="/profile" class="nav-link">
-            <i class="bi bi-person"></i>
-            Profile
-          </a>
-        </div>
-      <% } %>
+      <div class="nav-item">
+        <a href="/dashboard" class="nav-link">
+          <i class="bi bi-grid-1x2"></i>
+          Dashboard
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="/tournament" class="nav-link">
+          <i class="bi bi-trophy"></i>
+          Tournament
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="/trade" class="nav-link active">
+          <i class="bi bi-graph-up"></i>
+          Trade
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="/profile" class="nav-link">
+          <i class="bi bi-person"></i>
+          Profile
+        </a>
+      </div>
       <% if (user.role === 'admin') { %>
         <div class="nav-item">
           <a href="/admin/users" class="nav-link">
@@ -171,11 +169,10 @@
         </div>
       <% } %>
     </nav>
-    
     <div class="sidebar-footer">
       <div class="auth-buttons">
         <% if (loggedIn) { %>
-          <a href="/logout" class="btn btn-outline">
+          <a href="/logout" class="btn btn-primary">
             <i class="bi bi-box-arrow-right"></i>
             Logout
           </a>
@@ -184,7 +181,7 @@
             <i class="bi bi-box-arrow-in-right"></i>
             Sign In
           </a>
-          <a href="/register" class="btn btn-secondary">
+          <a href="/register" class="btn btn-primary">
             <i class="bi bi-person-plus"></i>
             Sign Up
           </a>
