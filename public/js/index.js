@@ -1,6 +1,7 @@
 // ตัวแปรสำหรับจัดการ symbol และราคาปัจจุบัน
 let currentSymbol = null;
 let lastKnownPrice = null; // Store last known price for fallback
+let priceInterval = null; // สำหรับ interval อัปเดตราคา
 
 // ฟังก์ชันโหลดข้อมูลราคาและแสดงบนหน้าเว็บ
 async function loadAsset(symbol) {
@@ -17,30 +18,39 @@ async function loadAsset(symbol) {
   priceElement.textContent = "กำลังโหลด...";
   priceElement.className = "badge badge-warning";
 
+  // ตั้ง interval สำหรับอัปเดตราคาแบบเรียลไทม์
+  if (priceInterval) clearInterval(priceInterval);
+  priceInterval = setInterval(() => {
+    fetchAndUpdatePrice(symbol);
+  }, 5000);
+  // โหลดราคาทันที
+  fetchAndUpdatePrice(symbol);
+  createTradingViewWidget(symbol);
+}
+
+// ฟังก์ชันดึงราคาจาก backend และอัปเดต DOM
+async function fetchAndUpdatePrice(symbol) {
+  // Validate symbol is a string
+  if (typeof symbol !== 'string' || !symbol.trim()) {
+    console.warn('Invalid symbol:', symbol);
+    return;
+  }
+  currentSymbol = symbol;
+  const priceElement = document.getElementById("current-price");
+  priceElement.textContent = "กำลังโหลด...";
+  priceElement.className = "badge badge-warning";
   try {
-    // ดึงราคาจาก backend
     const res = await fetch(`/api/price?symbol=${encodeURIComponent(symbol)}`);
-    
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-    }
-    
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
     const data = await res.json();
-    
     if (data.status === 'success' && data.price) {
-      // Success case
       const formattedPrice = parseFloat(data.price).toFixed(2);
       priceElement.textContent = `${formattedPrice} ${data.currency || 'USD'}`;
       priceElement.className = "badge badge-success";
-      lastKnownPrice = data.price; // Store for fallback
-      
-      // Update symbol display if available
+      lastKnownPrice = data.price;
       const symbolElement = document.getElementById("current-symbol");
-      if (symbolElement) {
-        symbolElement.textContent = data.symbol || symbol;
-      }
+      if (symbolElement) symbolElement.textContent = data.symbol || symbol;
     } else {
-      // API returned error
       handlePriceError(data.message || 'ไม่พบราคา', data.error);
     }
   } catch (err) {
@@ -62,8 +72,6 @@ async function loadAsset(symbol) {
       handlePriceError('ไม่สามารถดึงข้อมูลราคาได้', 'FETCH_ERROR');
     }
   }
-
-  createTradingViewWidget(symbol);
 }
 
 // ฟังก์ชันแสดง error ในช่องราคา
@@ -87,7 +95,7 @@ function loadCustomAsset() {
     alert('กรุณาใส่สัญลักษณ์');
     return;
   }
-  createTradingViewWidget(symbol);
+  loadAsset(symbol);
 }
 
 // สร้าง TradingView widget สำหรับกราฟ
