@@ -143,7 +143,7 @@
                 <tr data-tournament-id="<%= t._id %>">
                   <td><%= t.name %></td>
                   <td>$<%= t.balance %></td>
-                  <td><%= t.assets.join(', ') %></td>
+                  <td><%= t.join %></td>
                   <td style="white-space:nowrap;">
                     <%= start.toLocaleString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'}) %>
                     <br><span style="font-size:0.9em;color:#888;">(Indonesia Time Zone)</span>
@@ -175,7 +175,7 @@
                     <% } %>
                     <% if (user.role === 'admin') { %>
                       <% if (t.status !== 'END') { %>
-                        <button class="btn btn-secondary btn-sm" onclick="openEditModal('<%= t._id %>', '<%= t.name %>', '<%= t.balance %>', '<%= t.assets.join(', ') %>', '<%= t.start %>', '<%= t.end %>')">Edit</button>
+                        <button class="btn btn-secondary btn-sm" onclick="openEditModal('<%= t._id %>', '<%= t.name %>', '<%= t.balance %>', '<%= t.join %>', '<%= t.start %>', '<%= t.end %>')">Edit</button>
                         <button class="btn btn-info btn-sm" onclick="viewRequests('<%= t._id %>')">Requests</button>
                       <% } %>
                       <form method="POST" action="/tournament/delete/<%= t._id %>" style="display:inline">

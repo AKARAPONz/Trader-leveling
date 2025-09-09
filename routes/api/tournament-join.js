@@ -31,7 +31,7 @@ router.post('/join', async (req, res) => {
     } else if (now >= start && now <= end) {
       tournamentStatus = 'RUNNING';
     } else {
-      tournamentStatus = 'COMPLETE';
+      tournamentStatus = 'END';
     }
 
     // ตรวจสอบว่า tournament ยังเปิดรับสมัครอยู่หรือไม่
@@ -109,7 +109,6 @@ router.post('/accept', async (req, res) => {
 
     // อัปเดตสถานะเป็น accepted
     request.status = 'accepted';
-    request.processedBy = adminId;
     request.processedAt = new Date();
     await request.save();
 
@@ -151,7 +150,6 @@ router.post('/reject', async (req, res) => {
 
     // อัปเดตสถานะเป็น rejected
     request.status = 'rejected';
-    request.processedBy = adminId;
     request.processedAt = new Date();
     await request.save();
 
@@ -193,7 +191,6 @@ router.post('/remove', async (req, res) => {
 
     // อัปเดตสถานะเป็น removed
     request.status = 'removed';
-    request.processedBy = adminId;
     request.processedAt = new Date();
     await request.save();
 
@@ -230,8 +227,7 @@ router.get('/requests', async (req, res) => {
 
     // ดึงคำขอเข้าร่วม tournament
     const requests = await TournamentRequest.find({ tournamentId })
-      .populate('userId', 'name email level exp')
-      .populate('processedBy', 'name email')
+      .populate('userId', 'name username level exp')
       .sort({ appliedAt: -1 });
 
     res.json({
@@ -272,14 +268,14 @@ router.get('/status', async (req, res) => {
     } else if (now >= start && now <= end) {
       tournamentStatus = 'RUNNING';
     } else {
-      tournamentStatus = 'COMPLETE';
+      tournamentStatus = 'END';
     }
 
     // ตรวจสอบสถานะการสมัคร
     const request = await TournamentRequest.findOne({
       tournamentId,
       userId
-    }).populate('processedBy', 'name email');
+    });
 
     if (!request) {
       return res.json({
@@ -296,7 +292,6 @@ router.get('/status', async (req, res) => {
       status: request.status,
       appliedAt: request.appliedAt,
       processedAt: request.processedAt,
-      processedBy: request.processedBy,
       tournamentStatus: tournamentStatus
     });
 
@@ -306,4 +301,4 @@ router.get('/status', async (req, res) => {
   }
 });
 
-module.exports = router; 
+module.exports = router;

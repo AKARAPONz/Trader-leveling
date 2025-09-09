@@ -1,15 +1,3 @@
-function toggleTheme() {
-  const html = document.documentElement;
-  const themeButton = document.querySelector('[onclick="toggleTheme()"] i');
-  if (html.getAttribute('data-theme') === 'light') {
-    html.setAttribute('data-theme', 'dark');
-    themeButton.className = "bi bi-sun";
-  } else {
-    html.setAttribute('data-theme', 'light');
-    themeButton.className = "bi bi-moon";
-  }
-}
-
 async function loadUserLevelInfo() {
   try {
     const response = await fetch('/api/user-level');
@@ -48,10 +36,6 @@ async function loadUserLevelInfo() {
           nextLevelExpElement.textContent = levelInfo.nextLevelExp;
         }
       }
-      
-      // Update benefits
-      const benefitsTextElement = document.getElementById('benefitsText');
-      if (benefitsTextElement) benefitsTextElement.textContent = levelInfo.levelInfo.benefits;
     }
   } catch (error) {
     console.error('Error loading user level info:', error);

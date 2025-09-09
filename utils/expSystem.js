@@ -2,17 +2,18 @@ const User = require('../models/User');
 
 // ระดับและ EXP ที่ต้องการ
 const LEVEL_REQUIREMENTS = {
-  1: { name: 'Beginner', exp: 0, benefits: 'เข้าร่วมการแข่งขันได้' },
-  2: { name: 'Apprentice', exp: 100, benefits: 'ปลดล็อกกลยุทธ์พื้นฐาน' },
-  3: { name: 'Trader', exp: 300, benefits: 'เห็นสถิติย้อนหลังของตนเอง' },
-  4: { name: 'Pro Trader', exp: 800, benefits: 'ปลดล็อกฟีเจอร์เรียนรู้เพิ่มเติม' },
-  5: { name: 'Elite', exp: 1500, benefits: 'เข้าร่วมทัวร์นาเมนต์พิเศษ' }
+  1: { name: 'Beginner', exp: 0},
+  2: { name: 'Apprentice', exp: 100},
+  3: { name: 'Trader', exp: 300},
+  4: { name: 'Pro Trader', exp: 800},
+  5: { name: 'Elite', exp: 1500},
+  6: { name: 'God', exp: 99999999 }
 };
 
 // คำนวณเลเวลจาก EXP
 function getLevelFromExp(exp) {
   let level = 1;
-  for (let i = 5; i >= 1; i--) {
+  for (let i = 6; i >= 1; i--) {
     if (exp >= LEVEL_REQUIREMENTS[i].exp) {
       level = i;
       break;
@@ -24,7 +25,7 @@ function getLevelFromExp(exp) {
 // คำนวณ EXP ที่ต้องการสำหรับเลเวลถัดไป
 function getExpForNextLevel(currentLevel) {
   const nextLevel = currentLevel + 1;
-  if (nextLevel > 5) return null; // ถึงเลเวลสูงสุดแล้ว
+  if (nextLevel > 6) return null; // ถึงเลเวลสูงสุดแล้ว
   
   const currentExp = LEVEL_REQUIREMENTS[currentLevel].exp;
   const nextExp = LEVEL_REQUIREMENTS[nextLevel].exp;
@@ -129,11 +130,10 @@ async function getUserLevelInfo(userId) {
     if (!user) {
       return { success: false, error: 'User not found' };
     }
-    
-    const currentLevelInfo = LEVEL_REQUIREMENTS[user.level];
-    const nextLevelExp = getExpForNextLevel(user.level);
+    const level = user.level > 6 ? 6 : user.level;
+    const currentLevelInfo = LEVEL_REQUIREMENTS[level];
+    const nextLevelExp = getExpForNextLevel(level);
     const progressToNextLevel = nextLevelExp ? ((user.exp - currentLevelInfo.exp) / nextLevelExp) * 100 : 100;
-    
     return {
       success: true,
       level: user.level,
@@ -141,7 +141,7 @@ async function getUserLevelInfo(userId) {
       levelInfo: currentLevelInfo,
       nextLevelExp,
       progressToNextLevel: Math.min(progressToNextLevel, 100),
-      isMaxLevel: user.level >= 5
+      isMaxLevel: level >= 6
     };
   } catch (error) {
     console.error('❌ Error getting user level info:', error);
@@ -157,4 +157,4 @@ module.exports = {
   checkStrategyBonus,
   getUserLevelInfo,
   LEVEL_REQUIREMENTS
-}; 
+};

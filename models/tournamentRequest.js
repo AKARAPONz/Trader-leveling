@@ -9,7 +9,6 @@ const tournamentRequestSchema = new mongoose.Schema({
     default: 'pending'
   },
   appliedAt: { type: Date, default: Date.now },
-  processedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   processedAt: { type: Date }
 });
 

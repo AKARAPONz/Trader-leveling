@@ -52,7 +52,6 @@ router.post('/update', upload.single('profileImage'), async (req, res) => {
     // ✅ อัปเดต session ใหม่จากฐานข้อมูล (รักษา role เดิมไว้)
     req.session.user = {
       _id: user._id,
-      email: user.email,
       name: user.name,
       profileImage: user.profileImage || '/uploads/default.jpg',
       age: user.age || null,

@@ -698,25 +698,3 @@ p {
   background-color: var(--primary-color);
   color: var(--text-light);
 }
-
-/* ปุ่ม Edit/Close ตามธีม */
-.btn-theme-edit {
-  background: var(--info-color);
-  color: #fff;
-  border: none;
-  transition: background 0.2s;
-}
-.btn-theme-edit:hover {
-  background: #2563eb;
-  color: #fff;
-}
-.btn-theme-close {
-  background: var(--danger-color);
-  color: #fff;
-  border: none;
-  transition: background 0.2s;
-}
-.btn-theme-close:hover {
-  background: #b91c1c;
-  color: #fff;
-}

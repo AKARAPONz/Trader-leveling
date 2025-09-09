@@ -276,7 +276,7 @@ router.post('/', async (req, res) => {
         const user = await User.findById(entry._id);
         return {
           _id: entry._id,
-          name: user?.name || user?.email || 'Unknown',
+          name: user?.name || user?.username || 'Unknown',
           totalTrades: entry.totalTrades,
           totalLot: entry.totalLot,
           score: entry.score
@@ -351,7 +351,7 @@ router.get('/trades', async (req, res) => {
     })
     .sort({ createdAt: -1 })
     .limit(parseInt(limit))
-    .populate('userId', 'name email');
+    .populate('userId', 'name username');
     res.json({ 
       success: true, 
       trades: trades 
@@ -374,7 +374,7 @@ router.get('/positions', async (req, res) => {
       ...(isAdmin ? {} : { userId: req.session.user._id })
     })
     .sort({ createdAt: -1 })
-    .populate('userId', 'name email');
+    .populate('userId', 'name username');
     res.json({ 
       success: true, 
       positions: positions 

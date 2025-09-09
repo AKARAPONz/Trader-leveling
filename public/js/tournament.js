@@ -6,22 +6,13 @@ function closeCreateModal() {
   document.getElementById('createModal').style.display = 'none';
 }
 
-function openEditModal(id, name, balance, assets, start, end) {
+function openEditModal(id, name, balance, start, end) {
   document.getElementById('editTournamentId').value = id;
   document.getElementById('editName').value = name;
   document.getElementById('editBalance').value = balance;
-  // ลบ assets ออกถ้าไม่มี input นี้ในฟอร์ม
-  if (document.getElementById('editAssets')) {
-    document.getElementById('editAssets').value = assets;
-  }
   document.getElementById('editStart').value = start.slice(0, 16);
   document.getElementById('editEnd').value = end.slice(0, 16);
   document.getElementById('editModal').style.display = 'block';
-  
-  // Highlight the selected asset button in edit modal
-  setTimeout(() => {
-    highlightSelectedEditAsset();
-  }, 100);
 }
 
 function closeEditModal() {
@@ -87,9 +78,6 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Check tournament join status for all tournaments
   checkAllTournamentStatus();
-  
-  // Highlight the default selected asset button
-  highlightSelectedAsset();
 });
 
 // Hide Join buttons for tournaments that are not in REGISTRATION status
@@ -250,7 +238,7 @@ async function viewRequests(tournamentId) {
           <div class="request-item" style="border: 1px solid #e2e8f0; padding: 1rem; margin-bottom: 1rem; border-radius: 8px;">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <div>
-                <strong>${request.userId.name || request.userId.email}</strong>
+                <strong>${request.userId.name || request.userId.username}</strong>
                 <br>
                 <small class="text-muted">
                   Level: ${request.userId.level} | EXP: ${request.userId.exp}
@@ -278,15 +266,6 @@ async function viewRequests(tournamentId) {
                 <button class="btn btn-warning btn-sm" onclick="removeParticipant('${request._id}')">
                   <i class="bi bi-person-x"></i> Remove
                 </button>
-              </div>
-            ` : ''}
-            ${request.processedBy ? `
-              <div class="mt-2">
-                <small class="text-muted">
-                  Processed by: ${request.processedBy.name || request.processedBy.email}
-                  <br>
-                  Processed: ${new Date(request.processedAt).toLocaleString()}
-                </small>
               </div>
             ` : ''}
           </div>
@@ -433,74 +412,4 @@ function getCurrentTournamentId() {
   // Fallback: try to get from URL or other sources
   const urlParams = new URLSearchParams(window.location.search);
   return urlParams.get('tournamentId');
-}
-
-// Select single asset (replace current asset)
-function selectAsset(asset) {
-  const assetsInput = document.getElementById('assets');
-  assetsInput.value = asset;
-  
-  // Highlight the selected button
-  const allButtons = document.querySelectorAll('[onclick^="selectAsset"]');
-  allButtons.forEach(btn => {
-    btn.classList.remove('btn-primary');
-    btn.classList.add('btn-outline');
-  });
-  
-  // Find and highlight the clicked button
-  const clickedButton = document.querySelector(`[onclick="selectAsset('${asset}')"]`);
-  if (clickedButton) {
-    clickedButton.classList.remove('btn-outline');
-    clickedButton.classList.add('btn-primary');
-  }
-}
-
-// Highlight the currently selected asset button
-function highlightSelectedAsset() {
-  const assetsInput = document.getElementById('assets');
-  if (assetsInput) {
-    const selectedAsset = assetsInput.value.trim();
-    if (selectedAsset) {
-      const selectedButton = document.querySelector(`[onclick="selectAsset('${selectedAsset}')"]`);
-      if (selectedButton) {
-        selectedButton.classList.remove('btn-outline');
-        selectedButton.classList.add('btn-primary');
-      }
-    }
-  }
-}
-
-// Select single asset for edit modal
-function selectEditAsset(asset) {
-  const assetsInput = document.getElementById('editAssets');
-  assetsInput.value = asset;
-  
-  // Highlight the selected button
-  const allButtons = document.querySelectorAll('[onclick^="selectEditAsset"]');
-  allButtons.forEach(btn => {
-    btn.classList.remove('btn-primary');
-    btn.classList.add('btn-outline');
-  });
-  
-  // Find and highlight the clicked button
-  const clickedButton = document.querySelector(`[onclick="selectEditAsset('${asset}')"]`);
-  if (clickedButton) {
-    clickedButton.classList.remove('btn-outline');
-    clickedButton.classList.add('btn-primary');
-  }
-}
-
-// Highlight the currently selected asset button in edit modal
-function highlightSelectedEditAsset() {
-  const assetsInput = document.getElementById('editAssets');
-  if (assetsInput) {
-    const selectedAsset = assetsInput.value.trim();
-    if (selectedAsset) {
-      const selectedButton = document.querySelector(`[onclick="selectEditAsset('${selectedAsset}')"]`);
-      if (selectedButton) {
-        selectedButton.classList.remove('btn-outline');
-        selectedButton.classList.add('btn-primary');
-      }
-    }
-  }
 }

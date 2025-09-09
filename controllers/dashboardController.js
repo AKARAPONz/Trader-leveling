@@ -131,7 +131,6 @@ exports.index = async (req, res) => {
     winner,
     loggedIn: !!req.session.user,
     joinStatus,
-    tournamentAsset: tournament.assets[0],
     tournamentStart: tournament.start,
     tournamentEnd: tournament.end,
     accountBalance,

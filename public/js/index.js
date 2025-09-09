@@ -188,10 +188,6 @@ async function loadUserLevelInfo() {
           nextLevelExpElement.textContent = levelInfo.nextLevelExp;
         }
       }
-      
-      // Update benefits
-      const benefitsTextElement = document.getElementById('benefitsText');
-      if (benefitsTextElement) benefitsTextElement.textContent = levelInfo.levelInfo.benefits;
     }
   } catch (error) {
     console.error('Error loading user level info:', error);

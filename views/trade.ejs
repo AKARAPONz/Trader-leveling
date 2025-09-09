@@ -266,13 +266,6 @@
                 (<span id="progressPercent">0</span>%)
               </small>
             </div>
-            <div class="col-md-6">
-              <div id="levelBenefits">
-                <small class="text-muted">
-                  <strong>Benefits:</strong> <span id="benefitsText">Loading...</span>
-                </small>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -486,23 +479,6 @@
     let closePositionId = null;
     let closeCurrentLot = 0.01;
 
-    function toggleTheme() {
-      const html = document.documentElement;
-      const themeButton = document.querySelector('[onclick="toggleTheme()"] i');
-      if (html.getAttribute('data-theme') === 'light') {
-        html.setAttribute('data-theme', 'dark');
-        themeButton.className = "bi bi-sun";
-        localStorage.setItem('theme', 'dark');
-      } else {
-        html.setAttribute('data-theme', 'light');
-        themeButton.className = "bi bi-moon";
-        localStorage.setItem('theme', 'light');
-      }
-      if (currentSymbol) {
-        initChart();
-      }
-    }
-
     function setAction(action) {
       currentAction = action;
       document.getElementById('buyBtn').classList.toggle('btn-success', action === 'buy');
@@ -659,8 +635,6 @@
           } else {
             document.getElementById('nextLevelExp').textContent = levelInfo.nextLevelExp;
           }
-          
-          document.getElementById('benefitsText').textContent = levelInfo.levelInfo.benefits;
         }
       } catch (error) {
         console.error('Error loading user level:', error);
