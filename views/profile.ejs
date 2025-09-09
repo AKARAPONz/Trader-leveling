@@ -155,13 +155,7 @@
               </div>
               <div class="form-group">
                 <label for="country" class="form-label">Country</label>
-                <select class="form-control" id="country" name="country">
-                  <option value="Thailand" <%= user.country === 'Thailand' ? 'selected' : '' %>>Thailand</option>
-                  <option value="United States" <%= user.country === 'United States' ? 'selected' : '' %>>United States</option>
-                  <option value="Japan" <%= user.country === 'Japan' ? 'selected' : '' %>>Japan</option>
-                  <option value="Germany" <%= user.country === 'Germany' ? 'selected' : '' %>>Germany</option>
-                  <option value="Other" <%= user.country === 'Other' ? 'selected' : '' %>>Other</option>
-                </select>
+                <input list="countryList" class="form-control" id="country" name="country" value="<%= user.country || '' %>" autocomplete="country" readonly />
               </div>
               
               <!-- Display current role and level (read-only) -->

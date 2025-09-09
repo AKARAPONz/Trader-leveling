@@ -358,38 +358,3 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
-
-// ฟังก์ชันสำหรับโหลดราคา symbol ที่เปิดบนกราฟไปช่อง Market Price
-async function updateEntryPriceRealtime() {
-  const symbol = window.currentSymbol || document.getElementById('symbolSelect')?.value || 'AAPL';
-  try {
-    const res = await fetch(`/api/price?symbol=${encodeURIComponent(symbol)}`);
-    const data = await res.json();
-    if (data && data.price) {
-      document.getElementById('entryPrice').value = data.price;
-      document.getElementById('entryPriceRealtime').textContent = 'Realtime: ' + data.price;
-    } else {
-      document.getElementById('entryPrice').value = '';
-      document.getElementById('entryPriceRealtime').textContent = 'Realtime: -';
-    }
-  } catch {
-    document.getElementById('entryPrice').value = '';
-    document.getElementById('entryPriceRealtime').textContent = 'Realtime: -';
-  }
-}
-
-// อัปเดตราคา Market Price ทุก 3 วินาที และเมื่อเปลี่ยน symbol
-document.addEventListener('DOMContentLoaded', function() {
-  // ...existing code...
-  updateEntryPriceRealtime();
-  setInterval(updateEntryPriceRealtime, 3000);
-
-  const symbolSelect = document.getElementById('symbolSelect');
-  if (symbolSelect) {
-    symbolSelect.addEventListener('change', function() {
-      window.currentSymbol = symbolSelect.value;
-      updateEntryPriceRealtime();
-    });
-  }
-  // ...existing code...
-});

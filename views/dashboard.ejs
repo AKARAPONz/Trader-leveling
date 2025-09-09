@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
   <!-- ส่วนหัว: meta, title, css, font, style, js -->
   <meta charset="UTF-8" />
@@ -99,9 +99,6 @@
         </div>
       </div>
       <img src="<%= user.profileImage + '?v=' + Date.now() %>" class="avatar" alt="Profile" />
-      <button class="btn btn-secondary btn-sm" onclick="toggleTheme()" style="margin-left:1rem;">
-        <i class="bi bi-moon"></i>
-      </button>
     </div>
     <div class="content">
       <% if (!tournamentId) { %>
@@ -152,22 +149,16 @@
             <div class="row">
               <div class="col-md-8">
                 <div class="row">
-                  <div class="col-md-4">
+                  <div class="col-md-6">
                     <div class="text-center p-3 border rounded">
-                      <div class="h4 text-success mb-1">+<span id="openOrderPoints">10</span></div>
-                      <small class="text-muted">เปิดออเดอร์</small>
+                      <div class="h4 text-success mb-1">+<span id="profitAmount"><%= typeof totalProfit !== 'undefined' ? totalProfit : 0 %></span></div>
+                      <small class="text-muted">กำไรจากการเทรด</small>
                     </div>
                   </div>
-                  <div class="col-md-4">
+                  <div class="col-md-6">
                     <div class="text-center p-3 border rounded">
-                      <div class="h4 text-success mb-1">+<span id="profitPoints">50</span></div>
-                      <small class="text-muted">ปิดออเดอร์มีกำไร</small>
-                    </div>
-                  </div>
-                  <div class="col-md-4">
-                    <div class="text-center p-3 border rounded">
-                      <div class="h4 text-warning mb-1">+<span id="lossPoints">5</span></div>
-                      <small class="text-muted">ปิดออเดอร์ขาดทุน</small>
+                      <div class="h4 text-danger mb-1">-<span id="lossAmount"><%= typeof totalLoss !== 'undefined' ? totalLoss : 0 %></span></div>
+                      <small class="text-muted">ขาดทุนจากการเทรด</small>
                     </div>
                   </div>
                 </div>
@@ -176,14 +167,14 @@
                 <div class="border rounded p-3">
                   <h6 class="mb-2">คะแนนรวมของคุณ</h6>
                   <div class="h3 text-primary mb-1"><span id="totalTradingPoints"><%= totalScore %></span></div>
-                  <small class="text-muted">คะแนนจากการเทรด</small>
+                  <small class="text-muted">คะแนนจากการเทรด (คิดจากกำไร-ขาดทุน)</small>
                 </div>
               </div>
             </div>
             <div class="mt-3">
               <small class="text-muted">
                 <i class="bi bi-info-circle"></i>
-                <strong>ระบบคะแนน:</strong> คะแนนจะถูกคำนวณอัตโนมัติจากการทำกิจกรรมต่างๆ ในการเทรด
+                <strong>ระบบคะแนน:</strong> คะแนนจะถูกคำนวณจากกำไรและขาดทุนจริงในการเทรด
               </small>
             </div>
           </div>
@@ -203,7 +194,7 @@
                   <% if (tournamentStatus === 'RUNNING') { %>
                     <span class="badge badge-success">RUNNING</span>
                   <% } else if (tournamentStatus === 'END') { %>
-                    <span class="badge badge-secondary">END</span>
+                    <span class="badge badge-danger">END</span>
                   <% } else { %>
                     <span class="badge badge-primary">REGISTRATION</span>
                   <% } %>
@@ -238,7 +229,7 @@
                   <% leaderboard.forEach(function(entry, idx) { %>
                     <tr<%= entry._id.toString() === user._id.toString() ? ' class="table-success"' : '' %>>
                       <td><%= idx + 1 %></td>
-                      <td><%= entry.username || 'Unknown' %></td>
+                      <td><%= entry.name %></td>
                       <td><%= entry.score %></td>
                     </tr>
                   <% }) %>

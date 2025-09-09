@@ -74,7 +74,7 @@ exports.index = async (req, res) => {
     const user = req.userId;
     return {
       _id: user._id,
-      name: user.name || user.email || 'Unknown',
+      name: user.username || user.name,
       score: scoreMap.get(user._id.toString()) || 0
     };
   });
