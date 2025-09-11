@@ -1,11 +1,14 @@
+// เปิด modal สร้าง Tournament
 function openCreateModal() {
   document.getElementById('createModal').style.display = 'block';
 }
 
+// ปิด modal สร้าง Tournament
 function closeCreateModal() {
   document.getElementById('createModal').style.display = 'none';
 }
 
+// เปิด modal แก้ไข Tournament
 function openEditModal(id, name, balance, start, end) {
   document.getElementById('editTournamentId').value = id;
   document.getElementById('editName').value = name;
@@ -15,11 +18,12 @@ function openEditModal(id, name, balance, start, end) {
   document.getElementById('editModal').style.display = 'block';
 }
 
+// ปิด modal แก้ไข Tournament
 function closeEditModal() {
   document.getElementById('editModal').style.display = 'none';
 }
 
-// Close modals when clicking outside
+// ปิด modal เมื่อคลิกข้างนอก
 window.onclick = function(event) {
   const createModal = document.getElementById('createModal');
   const editModal = document.getElementById('editModal');
@@ -31,6 +35,7 @@ window.onclick = function(event) {
   }
 }
 
+// แสดงกราฟ TradingView
 function previewChart(symbol) {
   document.getElementById('chart-container').innerHTML = '';
   new TradingView.widget({
@@ -39,7 +44,6 @@ function previewChart(symbol) {
     symbol: symbol.replace('/', ''),
     interval: '1',
     timezone: 'Asia/Bangkok',
-    theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light',
     style: 1,
     locale: 'en',
     toolbar_bg: '#f8fafc',
@@ -49,6 +53,7 @@ function previewChart(symbol) {
   });
 }
 
+// โหลดข้อมูล Level ของผู้ใช้
 async function loadUserLevelInfo() {
   try {
     const response = await fetch('/api/user-level');
@@ -57,7 +62,7 @@ async function loadUserLevelInfo() {
     if (data.success) {
       const levelInfo = data.levelInfo;
       
-      // Update level display
+      // อัปเดตแสดงผล Level และ EXP
       const userLevelElement = document.getElementById('userLevel');
       const userExpElement = document.getElementById('userExp');
       
@@ -69,29 +74,29 @@ async function loadUserLevelInfo() {
   }
 }
 
-// Load user level info when page loads
+// โหลดข้อมูล Level เมื่อหน้าเว็บโหลด
 document.addEventListener('DOMContentLoaded', function() {
   loadUserLevelInfo();
   
-  // Hide Join buttons for non-REGISTRATION tournaments
+  // ซ่อนปุ่ม Join สำหรับ Tournament ที่ไม่ใช่สถานะ REGISTRATION หรือ RUNNING
   hideJoinButtonsForNonRegistrationTournaments();
   
-  // Check tournament join status for all tournaments
+  // ตรวจสอบสถานะการเข้าร่วม Tournament สำหรับทุก Tournament
   checkAllTournamentStatus();
 });
 
-// Hide Join buttons for tournaments that are not in REGISTRATION status
+// ซ่อนปุ่ม Join สำหรับ Tournament ที่ไม่ใช่สถานะ REGISTRATION หรือ RUNNING
 function hideJoinButtonsForNonRegistrationTournaments() {
   const tournamentRows = document.querySelectorAll('tr[data-tournament-id]');
   
   tournamentRows.forEach(row => {
     const tournamentId = row.getAttribute('data-tournament-id');
-    const statusCell = row.querySelector('td:nth-child(6)'); // Status column
+    const statusCell = row.querySelector('td:nth-child(6)'); // คอลัมน์สถานะ
     
     if (statusCell) {
       const statusText = statusCell.textContent.trim();
       
-      // Show Join button only for REGISTRATION and RUNNING status
+      // แสดงปุ่ม Join เฉพาะ REGISTRATION และ RUNNING
       if (statusText !== 'REGISTRATION' && statusText !== 'RUNNING') {
         const joinBtn = document.getElementById(`joinBtn-${tournamentId}`);
         if (joinBtn) {
@@ -102,22 +107,22 @@ function hideJoinButtonsForNonRegistrationTournaments() {
   });
 }
 
-// Join Tournament function
+// ฟังก์ชัน Join Tournament
 async function joinTournament(tournamentId) {
   try {
     const joinBtn = document.getElementById(`joinBtn-${tournamentId}`);
     const statusSpan = document.getElementById(`joinStatus-${tournamentId}`);
     
-    // Check tournament status first
+    // ตรวจสอบสถานะ Tournament ก่อน
     const statusResponse = await fetch(`/api/tournament-join/status?tournamentId=${tournamentId}`);
     const statusData = await statusResponse.json();
     
     if (statusData.tournamentStatus && statusData.tournamentStatus !== 'REGISTRATION' && statusData.tournamentStatus !== 'RUNNING') {
-      alert(`Cannot join tournament. Tournament is currently ${statusData.tournamentStatus.toLowerCase()}.`);
+      alert(`ไม่สามารถเข้าร่วมได้ ขณะนี้สถานะคือ ${statusData.tournamentStatus.toLowerCase()}`);
       return;
     }
     
-    // Show loading state
+    // แสดงสถานะกำลังโหลด
     joinBtn.style.display = 'none';
     statusSpan.style.display = 'inline';
     statusSpan.textContent = 'Joining...';
@@ -136,11 +141,11 @@ async function joinTournament(tournamentId) {
     if (data.success) {
       statusSpan.textContent = 'Applied';
       statusSpan.className = 'badge badge-success';
-      alert('Tournament join request submitted successfully!');
+      alert('ส่งคำขอเข้าร่วม Tournament สำเร็จ!');
     } else {
       statusSpan.textContent = 'Error';
       statusSpan.className = 'badge badge-danger';
-      alert('Error: ' + data.error);
+      alert('เกิดข้อผิดพลาด: ' + data.error);
     }
     
   } catch (error) {
@@ -148,11 +153,11 @@ async function joinTournament(tournamentId) {
     const statusSpan = document.getElementById(`joinStatus-${tournamentId}`);
     statusSpan.textContent = 'Error';
     statusSpan.className = 'badge badge-danger';
-    alert('Error joining tournament. Please try again.');
+    alert('เกิดข้อผิดพลาดในการเข้าร่วม กรุณาลองใหม่');
   }
 }
 
-// Check tournament join status
+// ตรวจสอบสถานะการ Join Tournament
 async function checkTournamentStatus(tournamentId) {
   try {
     const response = await fetch(`/api/tournament-join/status?tournamentId=${tournamentId}`);
@@ -161,7 +166,7 @@ async function checkTournamentStatus(tournamentId) {
     const joinBtn = document.getElementById(`joinBtn-${tournamentId}`);
     const statusSpan = document.getElementById(`joinStatus-${tournamentId}`);
     
-    // Show Join button only for REGISTRATION and RUNNING status
+    // แสดงปุ่ม Join เฉพาะ REGISTRATION และ RUNNING
     if (data.tournamentStatus && data.tournamentStatus !== 'REGISTRATION' && data.tournamentStatus !== 'RUNNING') {
       if (joinBtn) {
         joinBtn.style.display = 'none';
@@ -170,7 +175,7 @@ async function checkTournamentStatus(tournamentId) {
     }
     
     if (data.success && data.hasApplied) {
-      // Show status for all applications, but allow re-join for rejected ones
+      // แสดงสถานะการสมัครทั้งหมด แต่ให้สมัครใหม่ได้ถ้าโดน reject
       if (statusSpan) {
         statusSpan.style.display = 'inline';
         
@@ -188,7 +193,7 @@ async function checkTournamentStatus(tournamentId) {
           case 'rejected':
             statusSpan.textContent = 'Rejected';
             statusSpan.className = 'badge badge-danger';
-            // Show Join button for rejected applications so user can re-apply
+            // แสดงปุ่ม Join สำหรับ rejected เพื่อให้สมัครใหม่
             if (joinBtn) joinBtn.style.display = 'inline';
             break;
           case 'removed':
@@ -205,7 +210,7 @@ async function checkTournamentStatus(tournamentId) {
   }
 }
 
-// Check all tournament statuses
+// ตรวจสอบสถานะทุก Tournament
 async function checkAllTournamentStatus() {
   const tournamentRows = document.querySelectorAll('tr');
   tournamentRows.forEach(row => {
@@ -216,13 +221,13 @@ async function checkAllTournamentStatus() {
   });
 }
 
-// View tournament requests (admin only)
+// ดูคำขอเข้าร่วม Tournament (admin เท่านั้น)
 async function viewRequests(tournamentId) {
   try {
     const modal = document.getElementById('requestsModal');
     const requestsList = document.getElementById('requestsList');
     
-    // Store tournament ID in modal dataset
+    // เก็บ tournamentId ใน modal dataset
     modal.dataset.tournamentId = tournamentId;
     modal.style.display = 'block';
     requestsList.innerHTML = '<p class="text-muted text-center">Loading requests...</p>';
@@ -283,7 +288,7 @@ async function viewRequests(tournamentId) {
   }
 }
 
-// Accept request
+// อนุมัติคำขอ
 async function acceptRequest(requestId) {
   try {
     const response = await fetch('/api/tournament-join/accept', {
@@ -297,27 +302,27 @@ async function acceptRequest(requestId) {
     const data = await response.json();
     
     if (data.success) {
-      alert('Request accepted successfully!');
-      // Refresh the requests list
+      alert('อนุมัติคำขอเรียบร้อย!');
+      // รีเฟรชรายการคำขอ
       const modal = document.getElementById('requestsModal');
       if (modal.style.display === 'block') {
-        // Get tournament ID from the current modal
+        // ดึง tournamentId จาก modal
         const tournamentId = getCurrentTournamentId();
         if (tournamentId) {
           viewRequests(tournamentId);
         }
       }
     } else {
-      alert('Error: ' + data.error);
+      alert('เกิดข้อผิดพลาด: ' + data.error);
     }
     
   } catch (error) {
     console.error('Error accepting request:', error);
-    alert('Error accepting request. Please try again.');
+    alert('เกิดข้อผิดพลาดในการอนุมัติ กรุณาลองใหม่');
   }
 }
 
-// Reject request
+// ปฏิเสธคำขอ
 async function rejectRequest(requestId) {
   try {
     const response = await fetch('/api/tournament-join/reject', {
@@ -331,27 +336,27 @@ async function rejectRequest(requestId) {
     const data = await response.json();
     
     if (data.success) {
-      alert('Request rejected successfully!');
-      // Refresh the requests list
+      alert('ปฏิเสธคำขอเรียบร้อย!');
+      // รีเฟรชรายการคำขอ
       const modal = document.getElementById('requestsModal');
       if (modal.style.display === 'block') {
-        // Get tournament ID from the current modal
+        // ดึง tournamentId จาก modal
         const tournamentId = getCurrentTournamentId();
         if (tournamentId) {
           viewRequests(tournamentId);
         }
       }
     } else {
-      alert('Error: ' + data.error);
+      alert('เกิดข้อผิดพลาด: ' + data.error);
     }
     
   } catch (error) {
     console.error('Error rejecting request:', error);
-    alert('Error rejecting request. Please try again.');
+    alert('เกิดข้อผิดพลาดในการปฏิเสธ กรุณาลองใหม่');
   }
 }
 
-// Remove participant
+// ลบผู้เข้าร่วม
 async function removeParticipant(requestId) {
   try {
     const response = await fetch('/api/tournament-join/remove', {
@@ -365,32 +370,32 @@ async function removeParticipant(requestId) {
     const data = await response.json();
     
     if (data.success) {
-      alert('Participant removed successfully!');
-      // Refresh the requests list
+      alert('ลบผู้เข้าร่วมเรียบร้อย!');
+      // รีเฟรชรายการคำขอ
       const modal = document.getElementById('requestsModal');
       if (modal.style.display === 'block') {
-        // Get tournament ID from the current modal
+        // ดึง tournamentId จาก modal
         const tournamentId = getCurrentTournamentId();
         if (tournamentId) {
           viewRequests(tournamentId);
         }
       }
     } else {
-      alert('Error: ' + data.error);
+      alert('เกิดข้อผิดพลาด: ' + data.error);
     }
     
   } catch (error) {
     console.error('Error removing participant:', error);
-    alert('Error removing participant. Please try again.');
+    alert('เกิดข้อผิดพลาดในการลบ กรุณาลองใหม่');
   }
 }
 
-// Close requests modal
+// ปิด modal คำขอ
 function closeRequestsModal() {
   document.getElementById('requestsModal').style.display = 'none';
 }
 
-// Get status badge class
+// ฟังก์ชันสำหรับแสดง badge สถานะ
 function getStatusBadgeClass(status) {
   switch (status) {
     case 'pending': return 'warning';

@@ -4,84 +4,14 @@ let windowStart = 0; // index เริ่มต้นของ window กรา
 const windowSize = 20; // จำนวนแท่งกราฟที่แสดง
 let chart;
 let candleSeries;
-let tradeMarkers = []; // สำหรับ marker buy/sell
 
-// เปลี่ยน action buy/sell
 function setAction(action) {
   currentAction = action;
+  document.getElementById('selectedAction').textContent = action.toUpperCase();
+
+  // ปุ่มสี (Buy=เขียว, Sell=แดง)
   document.getElementById('buyBtn').classList.toggle('btn-success', action === 'buy');
-  document.getElementById('buyBtn').classList.toggle('btn-outline', action !== 'buy');
   document.getElementById('sellBtn').classList.toggle('btn-danger', action === 'sell');
-  document.getElementById('sellBtn').classList.toggle('btn-outline', action !== 'sell');
-}
-
-// เปลี่ยน symbol ที่เลือก
-function changeSymbol() {
-  currentSymbol = document.getElementById('symbolSelect').value;
-  windowStart = 0;
-  initChart();
-}
-
-// ย้อน window กราฟ
-function prevWindow() {
-  windowStart = Math.max(0, windowStart - windowSize);
-  fetchOHLCAndSet();
-}
-
-// ไปข้างหน้า window กราฟ
-function nextWindow() {
-  windowStart = windowStart + windowSize;
-  fetchOHLCAndSet();
-}
-
-// สร้างกราฟใหม่
-function initChart() {
-  const container = document.getElementById('lightweightChart');
-  if (!container) return;
-  container.innerHTML = '';
-  chart = LightweightCharts.createChart(container, {
-    width: container.clientWidth,
-    height: 500,
-    grid: { vertLines: { color: '#eee' }, horzLines: { color: '#eee' } },
-    timeScale: { timeVisible: true, secondsVisible: false },
-    rightPriceScale: {
-      borderColor: '#ccc',
-      entireTextOnly: true,
-      ticksVisible: false,
-      visible: true,
-    },
-  });
-  candleSeries = chart.addCandlestickSeries();
-  fetchOHLCAndSet();
-  addPriceTooltipOverlay(container, chart);
-  tradeMarkers = [];
-}
-
-// วาด marker buy/sell บนกราฟ
-function markTradeOnChart(action, price, lot) {
-  if (!candleSeries) return;
-  const bars = candleSeries._bars || [];
-  let lastBar = bars.length ? bars[bars.length-1] : null;
-  let time = lastBar ? lastBar.time : Math.floor(Date.now()/60)*60;
-  tradeMarkers.push({
-    time: time,
-    position: action === 'buy' ? 'belowBar' : 'aboveBar',
-    color: action === 'buy' ? '#10b981' : '#ef4444',
-    shape: action === 'buy' ? 'arrowUp' : 'arrowDown',
-    text: (action === 'buy' ? 'BUY' : 'SELL') + ' ' + lot + ' @' + price.toFixed(5)
-  });
-  candleSeries.setMarkers(tradeMarkers);
-}
-
-// ดึงราคาปิดล่าสุดจากกราฟ
-function getLastClosePriceOnChart() {
-  if (!candleSeries) return 0;
-  const bars = candleSeries._bars || [];
-  if (bars.length && typeof windowStart !== 'undefined' && typeof windowSize !== 'undefined') {
-    const idx = Math.min(windowStart + windowSize - 1, bars.length - 1);
-    return bars[idx]?.close || 0;
-  }
-  return 0;
 }
 
 // เพิ่ม tooltip ราคาบนกราฟ
@@ -238,7 +168,7 @@ function loadOpenPositions() {
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
   // Mouse move price tooltip overlay
-  var chartDiv = document.getElementById('tradingChart') || document.getElementById('tradingview_chart');
+  var chartDiv = document.getElementById('dynamic-graph');
   if (chartDiv) {
     let priceTooltip = document.createElement('div');
     priceTooltip.className = 'price-tooltip-overlay';
