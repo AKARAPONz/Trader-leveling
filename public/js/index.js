@@ -82,7 +82,7 @@ function handlePriceError(message, errorType) {
   
   // Add tooltip or additional info based on error type
   if (errorType === 'SYMBOL_NOT_FOUND') {
-    priceElement.title = 'ลองเปลี่ยนสัญลักษณ์ เช่น AAPL, BTC/USD, EUR/USD';
+    priceElement.title = 'ลองเปลี่ยนสัญลักษณ์ เช่น BTC/USD, EUR/USD';
   } else if (errorType === 'TIMEOUT') {
     priceElement.title = 'ลองรีเฟรชหน้าเว็บ';
   }
@@ -107,7 +107,7 @@ function createTradingViewWidget(symbol) {
   }
 
   // Validate symbol and interval
-  const validSymbol = typeof symbol === 'string' ? symbol : 'AAPL';
+  const validSymbol = typeof symbol === 'string' ? symbol : 'BTCUSDT';
   const interval = '1'; // default interval as string
 
   // ตรวจสอบว่ามี div id="dynamic-graph" จริงหรือไม่
@@ -197,7 +197,7 @@ async function loadUserLevelInfo() {
 // Initialize with default asset
 document.addEventListener('DOMContentLoaded', function() {
   // โหลด asset เริ่มต้น
-  loadAsset('AAPL');
+  loadAsset('BTCUSDT');
   loadUserLevelInfo();
   
   // Add Enter key support for custom symbol input

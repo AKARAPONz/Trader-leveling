@@ -9,148 +9,44 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://s3.tradingview.com/tv.js"></script>
   <style>
-    :root {
-      --primary-color: #0d6efd;
-    }
-    /* ปุ่ม Buy */
-    #buyBtn {
-      background-color: #16a34a;
-      color: white;
-      border: none;
-    }
-    #buyBtn:hover {
-      background-color: #15803d;
-    }
-    /* ปุ่ม Sell */
-    #sellBtn {
-      background-color: #dc2626;
-      color: white;
-      border: none;
-    }
-    #sellBtn:hover {
-      background-color: #b91c1c;
-    }
-    .btn-group .btn {
-      flex: 1;
-    }
-    .trade-item, .position-item {
-      padding: 0.75rem;
-      border-bottom: 1px solid #e2e8f0;
-      margin-bottom: 0.5rem;
-    }
-    .trade-item:last-child, .position-item:last-child {
-      border-bottom: none;
-      margin-bottom: 0;
-    }
-    .badge {
-      font-size: 0.75rem;
-      padding: 0.25rem 0.5rem;
-    }
-    .badge-success {
-      background-color: #10b981;
-      color: white;
-    }
-    .badge-danger {
-      background-color: #ef4444;
-      color: white;
-    }
-    .badge-primary {
-      background-color: #3b82f6;
-      color: white;
-    }
-    .level-up-notification {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      z-index: 1000;
-      animation: slideIn 0.5s ease-out;
-    }
-    @keyframes slideIn {
-      from {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
-    }
-    .progress-bar {
-      background-color: #3b82f6;
-      transition: width 0.3s ease;
-    }
+    :root { --primary-color: #0d6efd; }
+    #buyBtn { background-color: #16a34a; color: white; border: none; }
+    #buyBtn:hover { background-color: #15803d; }
+    #sellBtn { background-color: #dc2626; color: white; border: none; }
+    #sellBtn:hover { background-color: #b91c1c; }
+    .btn-group .btn { flex: 1; }
+    .trade-item, .position-item { padding: 0.75rem; border-bottom: 1px solid #e2e8f0; margin-bottom: 0.5rem; }
+    .trade-item:last-child, .position-item:last-child { border-bottom: none; margin-bottom: 0; }
+    .badge { font-size: 0.75rem; padding: 0.25rem 0.5rem; }
+    .badge-success { background-color: #10b981; color: white; }
+    .badge-danger { background-color: #ef4444; color: white; }
+    .badge-primary { background-color: #3b82f6; color: white; }
   </style>
 </head>
 <body data-has-tournament="<%= tournament ? 'true' : 'false' %>" data-tournament-id="<%= tournament ? tournament._id : '' %>">
+
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="sidebar-header">
-      <a href="/" class="brand">
-        <i class="bi bi-graph-up-arrow"></i>
-        Trader Leveling
-      </a>
+      <a href="/" class="brand"><i class="bi bi-graph-up-arrow"></i> Trader Leveling</a>
     </div>
     <nav class="nav-menu">
-      <div class="nav-item">
-        <a href="/" class="nav-link">
-          <i class="bi bi-house-door"></i>
-          Home
-        </a>
-      </div>
-      <div class="nav-item">
-        <a href="/dashboard" class="nav-link">
-          <i class="bi bi-grid-1x2"></i>
-          Dashboard
-        </a>
-      </div>
-      <div class="nav-item">
-        <a href="/tournament" class="nav-link">
-          <i class="bi bi-trophy"></i>
-          Tournament
-        </a>
-      </div>
-      <div class="nav-item">
-        <a href="/trade" class="nav-link active">
-          <i class="bi bi-graph-up"></i>
-          Trade
-        </a>
-      </div>
-      <div class="nav-item">
-        <a href="/profile" class="nav-link">
-          <i class="bi bi-person"></i>
-          Profile
-        </a>
-      </div>
+      <div class="nav-item"><a href="/" class="nav-link"><i class="bi bi-house-door"></i> Home</a></div>
+      <div class="nav-item"><a href="/dashboard" class="nav-link"><i class="bi bi-grid-1x2"></i> Dashboard</a></div>
+      <div class="nav-item"><a href="/tournament" class="nav-link"><i class="bi bi-trophy"></i> Tournament</a></div>
+      <div class="nav-item"><a href="/trade" class="nav-link active"><i class="bi bi-graph-up"></i> Trade</a></div>
+      <div class="nav-item"><a href="/profile" class="nav-link"><i class="bi bi-person"></i> Profile</a></div>
       <% if (user.role === 'admin') { %>
-        <div class="nav-item">
-          <a href="/admin/users" class="nav-link">
-            <i class="bi bi-people"></i>
-            Users
-          </a>
-        </div>
+      <div class="nav-item"><a href="/admin/users" class="nav-link"><i class="bi bi-people"></i> Users</a></div>
       <% } %>
     </nav>
     <div class="sidebar-footer">
       <div class="auth-buttons">
         <% if (loggedIn) { %>
-          <a href="/logout" class="btn btn-primary">
-            <i class="bi bi-box-arrow-right"></i>
-            Logout
-          </a>
+          <a href="/logout" class="btn btn-primary"><i class="bi bi-box-arrow-right"></i> Logout</a>
         <% } else { %>
-          <a href="/login" class="btn btn-primary">
-            <i class="bi bi-box-arrow-in-right"></i>
-            Sign In
-          </a>
-          <a href="/register" class="btn btn-primary">
-            <i class="bi bi-person-plus"></i>
-            Sign Up
-          </a>
+          <a href="/login" class="btn btn-primary"><i class="bi bi-box-arrow-in-right"></i> Sign In</a>
+          <a href="/register" class="btn btn-primary"><i class="bi bi-person-plus"></i> Sign Up</a>
         <% } %>
       </div>
     </div>
@@ -162,176 +58,124 @@
       <div class="user-info">
         <div class="user-details">
           <h4>Trade</h4>
-            <small>
-              Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
-              EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
-              Role: <span class="badge badge-<%= user.role === 'admin' ? 'danger' : user.role === 'trader' ? 'success' : 'secondary' %>"><%= user.role || 'Guest' %></span> | @<%= user.username || 'Guest' %> <br /> | 
-              <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
-            </small>
+          <small>
+            Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
+            EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
+            Role: <span class="badge badge-<%= user.role === 'admin' ? 'danger' : user.role === 'trader' ? 'success' : 'secondary' %>"><%= user.role || 'Guest' %></span> | 
+            @<%= user.username || 'Guest' %> <br/>
+            <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
+          </small>
         </div>
       </div>
       <img src="<%= user.profileImage + '?v=' + Date.now() %>" class="avatar" alt="Profile" />
     </div>
+
     <div class="content">
       <% if (error) { %>
-        <div class="alert alert-warning">
-          <i class="bi bi-exclamation-triangle"></i>
-          <%= error %>
-          <br><br>
-          <a href="/tournament" class="btn btn-primary">
-            <i class="bi bi-trophy"></i>
-            Go to Tournament Page
-          </a>
-        </div>
+        <div class="alert alert-warning"><i class="bi bi-exclamation-triangle"></i> <%= error %></div>
       <% } else if (tournament) { %>
 
-        <!-- Tournament Info -->
-        <div class="card mb-4">
-          <div class="card-header">
-            <h5><i class="bi bi-trophy"></i> Tournament: <%= tournament.name %></h5>
-            <small class="text-muted">Balance: $<%= userBalance %> </small>
+      <!-- Tournament Info -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5><i class="bi bi-trophy"></i> Tournament: <%= tournament.name %></h5>
+          <small class="text-muted">Balance: $<%= userBalance %></small>
+        </div>
+        <div class="card-body d-flex justify-content-between">
+          <div><strong>Status:</strong> 
+            <% if (tournamentStatus === 'RUNNING') { %>
+              <span class="badge badge-success">RUNNING</span>
+            <% } else if (tournamentStatus === 'END') { %>
+              <span class="badge badge-secondary">END</span>
+            <% } else { %>
+              <span class="badge badge-primary">REGISTRATION</span>
+            <% } %>
           </div>
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <strong>Status:</strong> 
+          <div><strong>Time Left:</strong> <span id="timeLeft">Loading...</span></div>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Chart -->
+        <div class="col-8">
+          <div class="card mb-4">
+            <div class="card-header"><h5><i class="bi bi-graph-up"></i> Trading Chart</h5></div>
+            <div class="card-body"><div id="dynamic-graph" style="height:500px; width:100%;"></div></div>
+          </div>
+        </div>
+
+        <!-- Trade Panel -->
+        <div class="col-4">
+          <div class="card mb-4">
+            <div class="card-header"><h5><i class="bi bi-currency-exchange"></i> Trade Panel</h5></div>
+            <div class="card-body">
+              <form id="tradeForm">
+                <input type="hidden" name="tournamentId" value="<%= tournament._id %>">
+                <input type="hidden" name="type" value="market">
+                <input type="hidden" id="symbolInput" name="symbol" value="BTCUSDT">
+
+                <div class="mb-3">
+                  <label>Symbol</label>
+                  <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="setSymbol('BTCUSDT', this)">BTC</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="setSymbol('ETHUSDT', this)">ETH</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="setSymbol('DOGEUSDT', this)">DOGE</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="setSymbol('BNBUSDT', this)">BNB</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="setSymbol('SOLUSDT', this)">SOL</button>
+                  </div>
+                  <small class="text-muted">Selected: <span id="selectedSymbol">BTCUSDT</span></small>
+                </div>
+
+                <div class="btn-group w-100 mb-2">
+                  <button type="button" class="btn" onclick="setAction('buy')" id="buyBtn"><i class="bi bi-arrow-up"></i> Buy</button>
+                  <button type="button" class="btn" onclick="setAction('sell')" id="sellBtn"><i class="bi bi-arrow-down"></i> Sell</button>
+                </div>
+                <small class="text-muted">Action: <span id="selectedAction">BUY</span></small>
+
+                <div class="form-group mt-3 mb-3">
+                  <label>Entry Price</label>
+                  <input type="text" id="entryPrice" class="form-control" readonly style="background:#f8fafc;">
+                </div>
+
+                <div class="form-group mb-3">
+                  <label for="lotSize">Lot Size</label>
+                  <input type="number" id="lotSize" name="lot" class="form-control" value="0.01" step="0.01" min="0.01">
+                </div>
+
+                <div class="form-group mb-3">
+                  <label for="stopLoss">Stop Loss</label>
+                  <input type="number" id="stopLoss" name="stopLoss" class="form-control" step="0.01">
+                  <label for="takeProfit">Take Profit</label>
+                  <input type="number" id="takeProfit" name="takeProfit" class="form-control" step="0.01">
+                </div>
+
                 <% if (tournamentStatus === 'RUNNING') { %>
-                  <span class="badge badge-success">RUNNING</span>
-                <% } else if (tournamentStatus === 'END') { %>
-                  <span class="badge badge-secondary">END</span>
+                  <button type="submit" class="btn btn-primary w-100" id="submitBtn"><i class="bi bi-send"></i> Place Order</button>
                 <% } else { %>
-                  <span class="badge badge-primary">REGISTRATION</span>
+                  <div class="alert alert-warning text-center"><i class="bi bi-clock"></i> Trading unavailable</div>
                 <% } %>
-              </div>
-              <div>
-                <strong>Time Left:</strong> <span id="timeLeft">Loading...</span>
-              </div>
+              </form>
             </div>
           </div>
         </div>
-
-<div class="row">
-  <!-- Chart -->
-  <div class="col-8">
-    <div class="card mb-4">
-      <div class="card-header">
-        <h5><i class="bi bi-graph-up"></i> Trading Chart</h5>
       </div>
-      <div class="card-body">
-        <div id="dynamic-graph" style="height: 500px; width: 100%;"></div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Trade Panel + Recent Trades -->
-  <div class="col-4">
-    <!-- Trade Panel -->
-    <div class="card mb-4">
-      <div class="card-header">
-        <h5><i class="bi bi-currency-exchange"></i> Trade Panel</h5>
-      </div>
-      <div class="card-body">
-        <form id="tradeForm">
-          <input type="hidden" name="tournamentId" value="<%= tournament._id %>">
-          <input type="hidden" name="type" value="market">
-          <input type="hidden" id="symbolInput" name="symbol" value="BTCUSDT">
-
-          <!-- Symbol Buttons -->
-          <div class="mb-3">
-            <label>Symbol</label>
-            <div class="d-flex gap-2">
-              <button type="button" class="btn btn-outline-primary btn-sm" onclick="setSymbol('BTCUSDT', this)">BTC</button>
-              <button type="button" class="btn btn-outline-primary btn-sm" onclick="setSymbol('XAUUSD', this)">XAU</button>
-            </div>
-            <small class="text-muted">Selected: <span id="selectedSymbol">BTCUSDT</span></small>
-          </div>
-
-<!-- Buy / Sell -->
-<div class="btn-group w-100 mb-2">
-  <button type="button" class="btn" onclick="setAction('buy')" id="buyBtn">
-    <i class="bi bi-arrow-up"></i> Buy
-  </button>
-  <button type="button" class="btn" onclick="setAction('sell')" id="sellBtn">
-    <i class="bi bi-arrow-down"></i> Sell
-  </button>
-</div>
-<small class="text-muted">Action: <span id="selectedAction">BUY</span></small>
-
-          <!-- Entry Price -->
-          <div class="form-group mt-3 mb-3">
-            <label>Entry Price</label>
-            <input type="text" id="entryPrice" class="form-control" readonly style="background:#f8fafc;">
-          </div>
-
-          <!-- Lot Size -->
-          <div class="form-group mb-3">
-            <label for="lotSize">Lot Size</label>
-            <input type="number" id="lotSize" name="lot" class="form-control" value="0.01" step="0.01" min="0.01">
-          </div>
-
-          <!-- SL / TP -->
-          <div class="form-group mb-3">
-              <label for="stopLoss">Stop Loss</label>
-              <input type="number" id="stopLoss" name="stopLoss" class="form-control">
-              <label for="takeProfit">Take Profit</label>
-              <input type="number" id="takeProfit" name="takeProfit" class="form-control">
-          </div>
-
-
-          <!-- Submit -->
-          <% if (tournamentStatus === 'RUNNING') { %>
-            <button type="submit" class="btn btn-primary w-100" id="submitBtn">
-              <i class="bi bi-send"></i> Place Order
-            </button>
-          <% } else { %>
-            <div class="alert alert-warning text-center">
-              <i class="bi bi-clock"></i> Trading unavailable
-            </div>
-          <% } %>
-        </form>
-      </div>
-    </div>
-
-    <!-- Recent Trades -->
-    <div class="card">
-      <div class="card-header">
-        <h5><i class="bi bi-clock-history"></i> Recent Trades</h5>
-      </div>
-      <div class="card-body">
-        <div id="recentTrades">
-          <p class="text-muted text-center">Loading recent trades...</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-    
-<script>
-  function setSymbol(symbol, btn) {
-    document.getElementById('symbolInput').value = symbol;
-    document.getElementById('selectedSymbol').textContent = symbol;
-
-    // toggle active button
-    document.querySelectorAll('.btn-outline-primary').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-
-    // โหลดกราฟใหม่ด้วย symbol ที่เลือก
-    currentSymbol = symbol;
-    initChart();
-  }
-</script>
-
-        <!-- Open Positions แสดงตำแหน่งที่เปิดอยู่ -->
-        <div class="card">
-          <div class="card-header">
-            <h5><i class="bi bi-list-ul"></i> Open Positions</h5>
-          </div>
-          <div class="card-body">
-            <div id="openPositions">
-              <p class="text-muted text-center">Loading open positions...</p>
-            </div>
+      <!-- Open Positions + Recent Trades side by side -->
+      <div class="row">
+        <div class="col-6">
+          <div class="card">
+            <div class="card-header"><h5><i class="bi bi-list-ul"></i> Open Positions</h5></div>
+            <div class="card-body"><div id="openPositions"><p class="text-muted text-center">Loading open positions...</p></div></div>
           </div>
         </div>
+        <div class="col-6">
+          <div class="card">
+            <div class="card-header"><h5><i class="bi bi-clock-history"></i> Recent Trades</h5></div>
+            <div class="card-body"><div id="recentTrades"><p class="text-muted text-center">Loading recent trades...</p></div></div>
+          </div>
+        </div>
+      </div>
+
       <% } %>
     </div>
   </div>
@@ -396,329 +240,308 @@
       <input type="hidden" id="editPositionId">
     </div>
   </div>
-  <script>
-    let currentAction = 'buy';
-    let currentSymbol = "<%= tournament && tournament.assets && tournament.assets.length > 0 ? tournament.assets[0] : 'BTCUSDT' %>";
-    let entryPriceInterval = null;
-    let closePositionId = null;
-    let closeCurrentLot = 0;
+<script>
+  let currentAction = 'buy';
+  let currentSymbol = document.getElementById('symbolInput').value || 'BTCUSDT';
+  let lastPrice = null;
+  let priceTimer = null;
 
-function setAction(action) {
-  currentAction = action;
-  document.getElementById('selectedAction').textContent = action.toUpperCase();
+  function setAction(action) {
+    currentAction = action;
+    document.getElementById('selectedAction').textContent = action.toUpperCase();
+    // ปรับโทนปุ่ม (มีสีจาก CSS แล้ว แค่สลับ class เสริมให้ชัด)
+    document.getElementById('buyBtn').classList.toggle('btn-success', action === 'buy');
+    document.getElementById('sellBtn').classList.toggle('btn-danger', action === 'sell');
+  }
 
-  // ปุ่มสี (Buy=เขียว, Sell=แดง)
-  document.getElementById('buyBtn').classList.toggle('btn-success', action === 'buy');
-  document.getElementById('sellBtn').classList.toggle('btn-danger', action === 'sell');
-}
+  function setSymbol(symbol, btn) {
+    currentSymbol = symbol;
+    document.getElementById('symbolInput').value = symbol;
+    document.getElementById('selectedSymbol').textContent = symbol;
 
+    // toggle active
+    document.querySelectorAll('.btn-outline-primary').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
 
-    function changeSymbol() {
-      currentSymbol = document.getElementById('symbolSelect').value;
-      initChart();
-    }
+    initChart();      // โหลดกราฟใหม่
+    refreshPrice();   // ดึงราคาใหม่ทันที
+  }
 
-    // เพิ่มฟังก์ชัน loadRecentTrades กลับมา
-    async function loadRecentTrades() {
-      try {
-        const tournamentId = '<%= tournament ? tournament._id : "" %>';
-        if (!tournamentId) return;
-        const response = await fetch(`/api/trade/recent?tournamentId=${tournamentId}`);
-        const data = await response.json();
-        const recentTradesDiv = document.getElementById('recentTrades');
-        if (data.success && data.trades && data.trades.length > 0) {
-          const tradesHtml = data.trades.map(trade => `
-            <div class="trade-item">
-              <div class="d-flex justify-content-between">
-                <span class="badge badge-${trade.action === 'buy' ? 'success' : 'danger'}">${trade.action.toUpperCase()}</span>
-                <small>${new Date(trade.createdAt).toLocaleTimeString()}</small>
-              </div>
-              <div>Lot: ${trade.lot} | Score: ${trade.score || 0}</div>
-            </div>
-          `).join('');
-          recentTradesDiv.innerHTML = tradesHtml;
-        } else {
-          recentTradesDiv.innerHTML = '<p class="text-muted text-center">No recent trades</p>';
-        }
-      } catch (error) {
-        document.getElementById('recentTrades').innerHTML = '<p class="text-muted text-center">Error loading trades</p>';
+  async function fetchCurrentPrice(symbol) {
+    const res = await fetch(`/api/price?symbol=${encodeURIComponent(symbol)}`);
+    const data = await res.json();
+    if (data && data.price) return data.price;
+    return null;
+  }
+
+  async function refreshPrice() {
+    try {
+      const p = await fetchCurrentPrice(currentSymbol);
+      if (p) {
+        lastPrice = p;
+        const entryEl = document.getElementById('entryPrice');
+        if (entryEl) entryEl.value = p;
       }
+    } catch (e) {
+      // เงียบๆ ไว้รอบหน้า
     }
+  }
 
-    async function loadOpenPositions() {
-      try {
-        const tournamentId = '<%= tournament ? tournament._id : "" %>';
-        if (!tournamentId) return;
-        
-        const response = await fetch(`/api/trade/positions?tournamentId=${tournamentId}`);
-        const data = await response.json();
-        
-        const openPositionsDiv = document.getElementById('openPositions');
-        if (data.success && data.positions && data.positions.length > 0) {
-          const positionsHtml = data.positions.map(position => {
-            let entryDisplay = position.entryPrice !== undefined && position.entryPrice !== null ? position.entryPrice : 'Market';
-            return `
+  function startPricePolling() {
+    if (priceTimer) clearInterval(priceTimer);
+    priceTimer = setInterval(refreshPrice, 3000);
+  }
+
+  function initChart() {
+    const chartDiv = document.getElementById('dynamic-graph');
+    if (!chartDiv) return;
+    chartDiv.innerHTML = '';
+    new TradingView.widget({
+      container_id: 'dynamic-graph',
+      autosize: true,
+      symbol: currentSymbol,
+      interval: '1',
+      timezone: 'Asia/Bangkok',
+      style: 1,
+      locale: 'en',
+      toolbar_bg: '#f8fafc',
+      enable_publishing: false,
+      hide_legend: false,
+      allow_symbol_change: false
+    });
+  }
+
+  async function loadRecentTrades() {
+    try {
+      const tournamentId = '<%= tournament ? tournament._id : "" %>';
+      if (!tournamentId) return;
+      const res = await fetch(`/api/trade/recent?tournamentId=${tournamentId}`);
+      const data = await res.json();
+      const recentTradesDiv = document.getElementById('recentTrades');
+      if (data.success && data.trades && data.trades.length) {
+        recentTradesDiv.innerHTML = data.trades.map(trade => `
+  <div class="trade-item">
+    <div class="d-flex justify-content-between">
+      <span class="badge badge-${trade.action === 'buy' ? 'success' : 'danger'}">
+        ${trade.action.toUpperCase()}
+      </span>
+      <small>${
+        trade.closedAt
+          ? new Date(trade.closedAt).toLocaleTimeString()
+          : new Date(trade.createdAt).toLocaleTimeString()
+      }</small>
+    </div>
+    <div>Lot: ${trade.lot} | Score: ${Number(trade.score).toFixed(2)}</div>
+  </div>
+`).join('');
+
+      } else {
+        recentTradesDiv.innerHTML = '<p class="text-muted text-center">No recent trades</p>';
+      }
+    } catch {
+      document.getElementById('recentTrades').innerHTML = '<p class="text-muted text-center">Error loading trades</p>';
+    }
+  }
+
+  async function loadOpenPositions() {
+    try {
+      const tournamentId = '<%= tournament ? tournament._id : "" %>';
+      if (!tournamentId) return;
+      const res = await fetch(`/api/trade/positions?tournamentId=${tournamentId}`);
+      const data = await res.json();
+      const box = document.getElementById('openPositions');
+      if (data.success && data.positions && data.positions.length) {
+        box.innerHTML = data.positions.map(position => {
+          const entryDisplay = (position.entryPrice ?? 'Market');
+          return `
             <div class="position-item">
               <div class="d-flex justify-content-between align-items-center">
-                <span class="badge badge-${position.action === 'buy' ? 'success' : 'danger'}">${position.action.toUpperCase()}</span>
+                <span class="badge badge-${position.action === 'buy' ? 'success' : 'danger'}">${(position.action||'').toUpperCase()}</span>
                 <small>${new Date(position.createdAt).toLocaleTimeString()}</small>
               </div>
-              <div>Lot: ${position.lot} | Entry: ${entryDisplay}
-                ${position.type === 'stop' && position.status === 'pending' ? '<span class=\'badge badge-warning\'>Pending Stop</span>' : ''}
-                ${position.type === 'stop' && position.status === 'active' ? '<span class=\'badge badge-success\'>Stop Triggered</span>' : ''}
-              </div>
+              <div>Lot: ${position.lot} | Entry: ${entryDisplay}</div>
               <div class="d-flex gap-2 mt-2">
                 <button class="btn btn-theme-edit btn-sm" onclick="showEditModal('${position._id}', ${position.lot}, ${position.stopLoss || 'null'}, ${position.takeProfit || 'null'})">Edit</button>
                 <button class="btn btn-theme-close btn-sm" onclick="showCloseModal('${position._id}', ${position.lot})">Close</button>
               </div>
             </div>
           `;
-          }).join('');
-          openPositionsDiv.innerHTML = positionsHtml;
-        } else {
-          openPositionsDiv.innerHTML = '<p class="text-muted text-center">No open positions</p>';
-        }
-      } catch (error) {
-        console.error('Error loading positions:', error);
-        document.getElementById('openPositions').innerHTML = '<p class="text-muted text-center">Error loading positions</p>';
-      } document.getElementById('openPositions').innerHTML = '<p class="text-muted text-center">Error loading positions</p>';
-    } 
-    
-    function updateTimeLeft() {
-      const tournamentEnd = new Date('<%= tournament ? tournament.end : "" %>');
-      const now = new Date();
-      const timeLeftElement = document.getElementById('timeLeft');
-      if (tournamentEnd && tournamentEnd > now) {
-        const timeDiff = tournamentEnd - now;
-        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-        let timeString = '';
-        if (days > 0) timeString += days + 'd ';
-        if (hours > 0) timeString += hours + 'h ';
-        if (minutes > 0) timeString += minutes + 'm ';
-        timeString += seconds + 's';
-        timeLeftElement.textContent = timeString;
+        }).join('');
       } else {
-        timeLeftElement.textContent = 'Tournament Ended';
+        box.innerHTML = '<p class="text-muted text-center">No open positions</p>';
       }
+    } catch {
+      document.getElementById('openPositions').innerHTML = '<p class="text-muted text-center">Error loading positions</p>';
     }
+  }
 
-    function showEditModal(positionId, lot, stopLoss, takeProfit) {
-      document.getElementById('editPositionId').value = positionId;
-      document.getElementById('editStopLoss').value = stopLoss && stopLoss !== 'null' ? stopLoss : '';
-      document.getElementById('editTakeProfit').value = takeProfit && takeProfit !== 'null' ? takeProfit : '';
-      document.getElementById('editPositionModal').style.display = 'flex';
+  function updateTimeLeft() {
+    const tournamentEnd = new Date('<%= tournament ? tournament.end : "" %>');
+    const now = new Date();
+    const timeLeftElement = document.getElementById('timeLeft');
+    if (tournamentEnd && tournamentEnd > now && timeLeftElement) {
+      const diff = tournamentEnd - now;
+      const d = Math.floor(diff / (1000*60*60*24));
+      const h = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+      const m = Math.floor((diff % (1000*60*60)) / (1000*60));
+      const s = Math.floor((diff % (1000*60)) / 1000);
+      timeLeftElement.textContent = `${d>0?d+'d ':''}${h>0?h+'h ':''}${m>0?m+'m ':''}${s}s`;
+    } else if (timeLeftElement) {
+      timeLeftElement.textContent = 'Tournament Ended';
     }
-    function closeEditModal() {
-      document.getElementById('editPositionModal').style.display = 'none';
-    }
+  }
 
-    async function saveEditPosition() {
-      const positionId = document.getElementById('editPositionId').value;
-      const stopLoss = document.getElementById('editStopLoss').value;
-      const takeProfit = document.getElementById('editTakeProfit').value;
-      try {
-        await fetch('/api/trade/edit-position', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ positionId, stopLoss, takeProfit })
-        });
-        closeEditModal();
-        loadOpenPositions();
-      } catch (e) {
-        alert('Error saving position');
-      }
-    }
-    
-    function showCloseModal(positionId, lot) {
-      closePositionId = positionId;
-      closeCurrentLot = lot;
-      document.getElementById('closePercent').value = 100;
-      document.getElementById('closeAmount').value = lot;
-      document.getElementById('closeCurrentSize').textContent = lot + ' Coins';
-      document.getElementById('closePnl').textContent = '$0.00';
-      document.getElementById('closePositionModal').style.display = 'flex';
-    }
-    function closeCloseModal() {
-      document.getElementById('closePositionModal').style.display = 'none';
-    }
-    function setClosePercent(percent) {
-      document.getElementById('closePercent').value = percent;
-      updateCloseAmount();
-    }
-    function updateCloseAmount() {
-      const percent = parseFloat(document.getElementById('closePercent').value);
-      const amount = (closeCurrentLot * percent / 100).toFixed(2);
-      document.getElementById('closeAmount').value = amount;
-      // (ถ้ามีสูตรคำนวณ PnL จริง ใส่ที่นี่)
-    }
-    function updateClosePercent() {
-      const amount = parseFloat(document.getElementById('closeAmount').value);
-      const percent = Math.min(100, Math.max(1, (amount / closeCurrentLot) * 100));
-      document.getElementById('closePercent').value = percent.toFixed(0);
-      // (ถ้ามีสูตรคำนวณ PnL จริง ใส่ที่นี่)
-    }
-    async function saveClosePosition() {
-      const lotToClose = parseFloat(document.getElementById('closeAmount').value);
-      if (!closePositionId || !lotToClose || lotToClose <= 0) return alert('Invalid input');
-      try {
-        // Get close price from chart (if available)
-        let closePrice = 0;
-        if (typeof getLastClosePriceOnChart === 'function') {
-          closePrice = getLastClosePriceOnChart();
-        }
-        console.log('[CLOSE] Sending closePrice from chart:', closePrice);
-        await fetch('/api/trade/close-position', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ positionId: closePositionId, lotToClose, closePrice })
-        });
-        closeCloseModal();
-        loadOpenPositions();
-        loadRecentTrades();
-      } catch (e) {
-        alert('Error closing position');
-      }
-    }
+  // ====== DOMReady ======
+  document.addEventListener('DOMContentLoaded', async () => {
+    // init
+    setAction('buy');
+    initChart();
+    await refreshPrice();
+    startPricePolling();
 
-    function onOrderTypeChange() {
-      const type = document.getElementById('orderType').value;
-      const stopPriceGroup = document.getElementById('stopPriceGroup');
-      if (type === 'stop') {
-        stopPriceGroup.style.display = '';
-      } else {
-        stopPriceGroup.style.display = 'none';
-        document.getElementById('stopPrice').value = '';
-      }
-    }
-
-    async function fetchCurrentPrice(symbol) {
-      const res = await fetch(`/api/price?symbol=${encodeURIComponent(symbol)}`);
-      const data = await res.json();
-      if (data && data.price) return data.price;
-      return null;
-    }
-
-    function initChart() {
-      // ลบกราฟเดิมก่อน
-      const chartDiv = document.getElementById('dynamic-graph');
-      chartDiv.innerHTML = '';
-      // สร้าง TradingView widget ใหม่
-      new TradingView.widget({
-        container_id: 'dynamic-graph',
-        autosize: true,
-        symbol: currentSymbol,
-        interval: '1',
-        timezone: 'Asia/Bangkok',
-        style: 1,
-        locale: 'en',
-        toolbar_bg: '#f8fafc',
-        enable_publishing: false,
-        hide_legend: false,
-        allow_symbol_change: false
-      });
-    }
-    
-    document.addEventListener('DOMContentLoaded', function() {
-      // Initialize chart
-      currentSymbol = document.getElementById('symbolSelect').value;
-      if (currentSymbol) {
-        initChart();
-      }
-      
-      // Set initial action
-      setAction('buy');
-      
-      // Load data
+    // data refresh
+    loadRecentTrades();
+    loadOpenPositions();
+    updateTimeLeft();
+    setInterval(() => {
       loadRecentTrades();
       loadOpenPositions();
-      loadUserLevelInfo();
-      
-      // Update time left
       updateTimeLeft();
-      setInterval(updateTimeLeft, 1000);
-      
-      // Refresh data every 30 seconds
-      setInterval(() => {
-        loadRecentTrades();
-        loadOpenPositions();
-      }, 30000);
-      
-      // Handle form submission
-      const tradeForm = document.getElementById('tradeForm');
-      if (tradeForm) {
-        tradeForm.addEventListener('submit', async function(e) {
-          e.preventDefault();
-          var formData = new FormData(this);
-          // เพิ่ม entryPrice จากราคาปัจจุบัน
-          var symbolSelect = document.getElementById('symbolSelect');
-          if (symbolSelect && symbolSelect.value) {
-            const price = await fetchCurrentPrice(symbolSelect.value);
-            if (price) {
-              formData.set('entryPrice', price);
-            }
-          }
-          formData.append('action', currentAction);
-          formData.set('type', document.getElementById('orderType').value);
-          
-          // เพิ่ม stopPrice เฉพาะ type=stop
-          if (document.getElementById('orderType').value === 'stop') {
-            formData.append('stopPrice', document.getElementById('stopPrice').value);
-          }
-          
-          // Clean empty values
-          ['stopLoss', 'takeProfit'].forEach(field => {
-            const value = formData.get(field);
-            if (!value || value.trim() === '') {
-              formData.delete(field);
-            }
-          });
-          
-          const submitBtn = document.getElementById('submitBtn');
-          const originalText = submitBtn.innerHTML;
-          submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Placing Order...';
-          submitBtn.disabled = true;
-          
-          try {
-            const response = await fetch('/api/trade', {
-              method: 'POST',
-              body: formData
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-              alert('Order placed successfully!\nAction: ' + data.trade.action.toUpperCase() + '\nLot: ' + data.trade.lot + '\nScore: ' + data.trade.score);
-              tradeForm.reset();
-              setAction('buy');
-              
-              // Refresh data
-              setTimeout(() => {
-                loadRecentTrades();
-                loadOpenPositions();
-                loadUserLevelInfo();
-              }, 1000);
-            } else {
-              alert('Error: ' + (data.error || 'Unknown error'));
-            }
-          } catch (error) {
-            console.error('Error placing order:', error);
-            alert('Error placing order: ' + error.message);
-          } finally {
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-          }
-        });
-      }
-    });
+    }, 30000);
 
-    function loadAsset(symbol) {
-      currentSymbol = symbol;
-      initChart();
+    // submit
+    const tradeForm = document.getElementById('tradeForm');
+    if (tradeForm) {
+      tradeForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // ดึงราคาปัจจุบันล่าสุดใส่ entryPrice
+        await refreshPrice();
+        const priceToUse = lastPrice;
+        if (!priceToUse) {
+          return alert('Cannot fetch current price. Please try again.');
+        }
+
+        const formData = new FormData(tradeForm);
+        formData.set('symbol', currentSymbol);
+        formData.set('action', currentAction);
+        formData.set('type', 'market');            // หน้านี้ให้ Market ตามที่คุณต้องการ
+        formData.set('entryPrice', String(priceToUse));
+
+        // ลบค่า SL/TP ที่ว่างเปล่า
+        ['stopLoss', 'takeProfit'].forEach(k => {
+          const v = formData.get(k);
+          if (!v || String(v).trim() === '') formData.delete(k);
+        });
+
+        const btn = document.getElementById('submitBtn');
+        const old = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Placing Order...';
+
+        try {
+          const res = await fetch('/api/trade', { method: 'POST', body: formData });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            alert(`Order placed!\nAction: ${data.trade.action}\nLot: ${data.trade.lot}\nScore: ${data.trade.score}`);
+            tradeForm.reset();
+            setAction('buy');
+            await loadRecentTrades();
+            await loadOpenPositions();
+          } else {
+            alert('Error: ' + (data.error || 'Unknown error'));
+          }
+        } catch (err) {
+          alert('Error placing order: ' + err.message);
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = old;
+        }
+      });
     }
-  </script>
+  });
+
+  // ====== Edit/Close modal functions (คงของเดิม) ======
+  function showEditModal(positionId, lot, stopLoss, takeProfit) {
+    document.getElementById('editPositionId').value = positionId;
+    document.getElementById('editStopLoss').value = stopLoss && stopLoss !== 'null' ? stopLoss : '';
+    document.getElementById('editTakeProfit').value = takeProfit && takeProfit !== 'null' ? takeProfit : '';
+    document.getElementById('editPositionModal').style.display = 'flex';
+  }
+  function closeEditModal() {
+    document.getElementById('editPositionModal').style.display = 'none';
+  }
+  async function saveEditPosition() {
+    const positionId = document.getElementById('editPositionId').value;
+    const stopLoss = document.getElementById('editStopLoss').value;
+    const takeProfit = document.getElementById('editTakeProfit').value;
+    try {
+      await fetch('/api/trade/edit-position', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ positionId, stopLoss, takeProfit })
+      });
+      closeEditModal();
+      loadOpenPositions();
+    } catch {
+      alert('Error saving position');
+    }
+  }
+
+  let closePositionId = null;
+  let closeCurrentLot = 0;
+  function showCloseModal(positionId, lot) {
+    closePositionId = positionId;
+    closeCurrentLot = lot;
+    document.getElementById('closePercent').value = 100;
+    document.getElementById('closeAmount').value = lot;
+    document.getElementById('closeCurrentSize').textContent = lot;
+    document.getElementById('closePnl').textContent = '$0.00';
+    document.getElementById('closePositionModal').style.display = 'flex';
+  }
+  function closeCloseModal() {
+    document.getElementById('closePositionModal').style.display = 'none';
+  }
+  function setClosePercent(percent) {
+    document.getElementById('closePercent').value = percent;
+    updateCloseAmount();
+  }
+  function updateCloseAmount() {
+    const percent = parseFloat(document.getElementById('closePercent').value);
+    const amount = (closeCurrentLot * percent / 100).toFixed(2);
+    document.getElementById('closeAmount').value = amount;
+  }
+  function updateClosePercent() {
+    const amount = parseFloat(document.getElementById('closeAmount').value);
+    const percent = Math.min(100, Math.max(1, (amount / closeCurrentLot) * 100));
+    document.getElementById('closePercent').value = percent.toFixed(0);
+  }
+async function saveClosePosition() {
+  await refreshPrice();
+  const closePrice = lastPrice;
+  if (!closePositionId || !closePrice) return alert('Missing position or price');
+  const lotToClose = parseFloat(document.getElementById('closeAmount').value);
+  if (!lotToClose || lotToClose <= 0) return alert('Invalid close amount');
+  try {
+    const res = await fetch('/api/close-position', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ positionId: closePositionId, lotToClose })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(`✅ Position closed!\nPnL: ${data.pnl}\nScore: ${data.score}`);
+      closeCloseModal();
+      loadOpenPositions();
+      loadRecentTrades();
+    } else {
+      alert('Error: ' + (data.error || 'Close failed'));
+    }
+  } catch (err) {
+    alert('Error closing position: ' + err.message);
+  }
+}
+</script>
   
 </body>
 </html>

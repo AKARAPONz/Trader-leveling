@@ -46,29 +46,6 @@ function addPriceTooltipOverlay(container, chart) {
   });
 }
 
-// ดึงข้อมูล OHLC จาก backend แล้ว set ลงกราฟ
-function fetchOHLCAndSet() {
-  const tournamentId = getTournamentId();
-  const symbol = currentSymbol;
-  fetch(`/api/trade/ohlc?tournamentId=${tournamentId}&symbol=${symbol}`)
-    .then(res => res.json())
-    .then(data => {
-      if (data.bars && data.bars.length) {
-        let bars = data.bars;
-        const maxStart = Math.max(0, Math.min(bars.length - windowSize, 720 - windowSize));
-        windowStart = Math.max(0, Math.min(windowStart, maxStart));
-        const ohlc = bars.slice(windowStart, windowStart + windowSize).map(bar => ({
-          time: bar.time,
-          open: bar.open,
-          high: bar.high,
-          low: bar.low,
-          close: bar.close
-        }));
-        candleSeries.setData(ohlc);
-      }
-    });
-}
-
 // แสดง toast แจ้งผลการเทรด
 function showTradeToast(message, isError) {
   let toast = document.createElement('div');
@@ -104,7 +81,8 @@ function loadRecentTrades() {
       tournamentId = getTournamentId();
     }
     if (!tournamentId) return;
-    fetch(`/api/trade/recent?tournamentId=${tournamentId}`)
+fetch(`/api/trade/positions?tournamentId=${tournamentId}`)
+
       .then(res => res.json())
       .then(data => {
         const recentTradesDiv = document.getElementById('recentTrades');
@@ -138,7 +116,8 @@ function loadOpenPositions() {
   const openPositionsDiv = document.getElementById('openPositions');
   if (!openPositionsDiv) return;
   openPositionsDiv.innerHTML = '<p class="text-muted text-center">Loading open positions...</p>';
-  fetch(`/api/positions?tournamentId=${tournamentId}`)
+fetch(`/api/trade/positions?tournamentId=${tournamentId}`)
+
     .then(res => res.json())
     .then(data => {
       if (!data.success || !data.positions || !data.positions.length) {

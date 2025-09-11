@@ -9,10 +9,16 @@ router.get('/recent', async (req, res) => {
     if (!tournamentId || !userId) {
       return res.json({ success: true, trades: [] });
     }
-    const trades = await TradeLog.find({ tournamentId, userId })
+
+    const trades = await TradeLog.find({
+        tournamentId,
+        userId,
+        action: { $in: ['close-buy', 'close-sell'] }   // ✅ เฉพาะ order ที่ปิดแล้ว
+      })
       .sort({ createdAt: -1 })
       .limit(20)
       .lean();
+
     res.json({ success: true, trades });
   } catch (error) {
     res.json({ success: false, trades: [], error: error.message });
@@ -28,8 +34,6 @@ const mongoose = require('mongoose');
 const { addExp, checkDailyTradeBonus, checkStrategyBonus } = require('../../utils/expSystem');
 const axios = require('axios');
 const TournamentUser = require('../../models/tournamentUser');
-
-const ohlcRouter = require('./ohlc');
 
 // ✅ POST /api/trade
 router.post('/', async (req, res) => {
@@ -464,26 +468,35 @@ router.post('/close-position', async (req, res) => {
       return res.status(400).json({ error: 'Close price must be a number' });
     }
     // ไม่ดึงราคาตลาด ไม่ fallback ใดๆ
+
     // ตอนปิดออเดอร์
-    let pnl = 0;
-    if (position.action === 'buy') {
-      pnl = (closePrice - position.entryPrice) * closeLot;
-    } else if (position.action === 'sell') {
-      pnl = (position.entryPrice - closePrice) * closeLot;
-    }
-    let score = 0;
-    if (pnl > 0) score = 50;
-    else score = 5;
-    // เพิ่ม TradeLog
-    await TradeLog.create({
-      userId: position.userId,
-      tournamentId: position.tournamentId,
-      action: `close-${position.action}`,
-      lot: closeLot,
-      score: score,
-      pnl: pnl,
-      createdAt: new Date()
-    });
+let score = 0;
+if (pos.action === 'buy') {
+  if (pos.entryPrice < price) {
+    score = (price - pos.entryPrice) * pos.lot;
+  } else {
+    score = -((pos.entryPrice - price) * pos.lot);
+  }
+} else if (pos.action === 'sell') {
+  if (pos.entryPrice > price) {
+    score = (pos.entryPrice - price) * pos.lot;
+  } else {
+    score = -((price - pos.entryPrice) * pos.lot);
+  }
+}
+
+const pnl = score; // ใช้ค่าเดียวกัน
+
+await TradeLog.create({
+  userId: position.userId,
+  tournamentId: position.tournamentId,
+  action: `close-${position.action}`,
+  lot: closeLot,
+  score: score,     // ✅ คำนวณจาก pnl
+  pnl: pnl,
+  createdAt: new Date()
+});
+
     // คืน balance ให้ TournamentUser
     let tournamentUser = await TournamentUser.findOne({ tournamentId: position.tournamentId, userId: position.userId });
     if (tournamentUser) {
@@ -502,8 +515,5 @@ router.post('/close-position', async (req, res) => {
     res.status(500).json({ error: 'Error closing position' });
   }
 });
-
-// Mount OHLC API
-router.use('/ohlc', ohlcRouter);
 
 module.exports = router;

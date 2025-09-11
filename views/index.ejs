@@ -133,97 +133,78 @@
         </div>
       </div>
 
-      <!-- Asset Selection: เลือกสินทรัพย์ -->
-      <div class="card mb-4">
-        <div class="card-header">
-          <h5 class="card-title">
-            <i class="bi bi-search"></i>
-            เลือกสินทรัพย์
-          </h5>
-        </div>
-        <div class="card-body">
-          <div class="d-flex flex-wrap gap-2 mb-3">
-            <!-- Stocks -->
-            <div class="mb-3">
-              <h6 class="mb-2">
-                <i class="bi bi-graph-up text-success"></i>
-                Stocks
-              </h6>
-              <div class="d-flex flex-wrap gap-1">
-                <button class="btn btn-outline btn-sm" onclick="loadAsset('AAPL')">AAPL</button>
-                <button class="btn btn-outline btn-sm" onclick="loadAsset('GOOG')">GOOG</button>
-                <button class="btn btn-outline btn-sm" onclick="loadAsset('MSFT')">MSFT</button>
-                <button class="btn btn-outline btn-sm" onclick="loadAsset('TSLA')">TSLA</button>
-                <button class="btn btn-outline btn-sm" onclick="loadAsset('AMZN')">AMZN</button>
-              </div>
-            </div>
+<!-- Asset Selection: เลือกสินทรัพย์ -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="card-title">
+      <i class="bi bi-search"></i>
+      เลือก Crypto
+    </h5>
+  </div>
+  <div class="card-body">
+    <div class="d-flex flex-wrap gap-2 mb-3">
 
-            <!-- Crypto -->
-            <div class="mb-3">
-              <h6 class="mb-2">
-                <i class="bi bi-currency-bitcoin text-warning"></i>
-                Crypto
-              </h6>
-              <div class="d-flex flex-wrap gap-1">
-                <button class="btn btn-outline btn-sm" onclick="loadAsset('BTC/USD')">BTC</button>
-                <button class="btn btn-outline btn-sm" onclick="loadAsset('ETH/USD')">ETH</button>
-                <button class="btn btn-outline btn-sm" onclick="loadAsset('BNB/USD')">BNB</button>
-                <button class="btn btn-outline btn-sm" onclick="loadAsset('SOL/USD')">SOL</button>
-              </div>
-            </div>
+      <!-- Crypto -->
+      <div class="mb-3">
+        <h6 class="mb-2">
+          <i class="bi bi-currency-bitcoin text-warning"></i>
+          Crypto
+        </h6>
+<div class="d-flex flex-wrap gap-2">
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('BTCUSDT')">BTC</button>
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('ETHUSDT')">ETH</button>
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('BNBUSDT')">BNB</button>
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('SOLUSDT')">SOL</button>
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('XRPUSDT')">XRP</button>
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('DOGEUSDT')">DOGE</button>
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('ADAUSDT')">ADA</button>
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('MATICUSDT')">MATIC</button>
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('DOTUSDT')">DOT</button>
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('LTCUSDT')">LTC</button>
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('SHIBUSDT')">SHIB</button>
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('AVAXUSDT')">AVAX</button>
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('TRXUSDT')">TRX</button>
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('LINKUSDT')">LINK</button>
+  <!-- ✅ เพิ่มใหม่ -->
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('ATOMUSDT')">ATOM</button>
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('NEARUSDT')">NEAR</button>
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('APTUSDT')">APT</button>
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('ARBUSDT')">ARB</button>
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('OPUSDT')">OP</button>
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('FILUSDT')">FIL</button>
+  <button class="btn btn-outline btn-sm" onclick="loadAsset('SANDUSDT')">SAND</button>
+<button class="btn btn-outline btn-sm" onclick="loadAsset('MANAUSDT')">MANA</button>
 
-            <!-- Commodities -->
-            <div class="mb-3">
-              <h6 class="mb-2">
-                <i class="bi bi-gem text-info"></i>
-                Commodities
-              </h6>
-              <div class="d-flex flex-wrap gap-1">
-                <button class="btn btn-outline btn-sm" onclick="loadAsset('XAU/USD')">Gold</button>
-                <button class="btn btn-outline btn-sm" onclick="loadAsset('XAG/USD')">Silver</button>
-              </div>
-            </div>
-
-            <!-- Forex -->
-            <div class="mb-3">
-              <h6 class="mb-2">
-                <i class="bi bi-currency-exchange text-primary"></i>
-                Forex
-              </h6>
-              <div class="d-flex flex-wrap gap-1">
-                <button class="btn btn-outline btn-sm" onclick="loadAsset('EUR/USD')">EUR/USD</button>
-                <button class="btn btn-outline btn-sm" onclick="loadAsset('USD/JPY')">USD/JPY</button>
-                <button class="btn btn-outline btn-sm" onclick="loadAsset('GBP/USD')">GBP/USD</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Custom Symbol Input -->
-          <div class="mb-3">
-            <div class="input-group">
-              <input type="text" id="customSymbol" class="form-control" placeholder="ใส่สัญลักษณ์เอง เช่น AAPL, BTC/USD, EUR/USD" />
-              <button class="btn btn-primary" onclick="loadCustomAsset()">
-                <i class="bi bi-search"></i>
-                ค้นหา
-              </button>
-            </div>
-            <small class="text-muted">
-              <i class="bi bi-lightbulb"></i>
-              ตัวอย่าง: AAPL, GOOGL, BTC/USD, ETH/USD, EUR/USD, XAU/USD
-            </small>
-          </div>
-
-          <div class="alert alert-info">
-            <strong>ราคาปัจจุบัน:</strong> 
-            <span id="current-symbol">-</span> | 
-            <span id="current-price" class="badge badge-primary">-</span>
-            <small class="d-block mt-1 text-muted">
-              <i class="bi bi-info-circle"></i>
-              เลือกสัญลักษณ์ด้านบนเพื่อดูราคาและกราฟ
-            </small>
-          </div>
-        </div>
+</div>
       </div>
+    </div>
+
+    <!-- Custom Symbol Input -->
+    <div class="mb-3">
+      <div class="input-group">
+        <input type="text" id="customSymbol" class="form-control" placeholder="ใส่สัญลักษณ์เอง เช่น BTCUSDT, ETHUSDT" />
+        <button class="btn btn-primary" onclick="loadCustomAsset()">
+          <i class="bi bi-search"></i>
+          ค้นหา
+        </button>
+      </div>
+      <small class="text-muted">
+        <i class="bi bi-lightbulb"></i>
+        ตัวอย่าง: BTCUSDT, ETHUSDT, BNBUSDT
+      </small>
+    </div>
+
+    <div class="alert alert-info">
+      <strong>ราคาปัจจุบัน:</strong> 
+      <span id="current-symbol">-</span> | 
+      <span id="current-price" class="badge badge-primary">-</span>
+      <small class="d-block mt-1 text-muted">
+        <i class="bi bi-info-circle"></i>
+        เลือกสัญลักษณ์ด้านบนเพื่อดูราคาและกราฟ
+      </small>
+    </div>
+  </div>
+</div>
 
       <!-- Trading Chart: กราฟ TradingView Delay=30sec -->
       <div class="card">

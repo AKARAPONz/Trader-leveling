@@ -145,9 +145,8 @@ async function getMarketPrice(symbol) {
   }
 }
 
-// เรียกใช้งาน worker สำหรับ auto close position
-const startAutoCloseWorker = require('./scripts/autoCloseWorker');
-startAutoCloseWorker({ OpenPosition, TradeLog, getMarketPrice });
+// autoCloseWorker
+require('./services/orderWatcher');
 
 // Start server
 http.listen(4000, () => {
