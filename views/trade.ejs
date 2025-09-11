@@ -261,7 +261,6 @@
           <div class="form-group mt-3 mb-3">
             <label>Entry Price</label>
             <input type="text" id="entryPrice" class="form-control" readonly style="background:#f8fafc;">
-            <small>Current: <span id="current-symbol">BTCUSDT</span></small>
           </div>
 
           <!-- Lot Size -->
@@ -311,7 +310,6 @@
   function setSymbol(symbol, btn) {
     document.getElementById('symbolInput').value = symbol;
     document.getElementById('selectedSymbol').textContent = symbol;
-    document.getElementById('current-symbol').textContent = symbol;
 
     // toggle active button
     document.querySelectorAll('.btn-outline-primary').forEach(b => b.classList.remove('active'));
