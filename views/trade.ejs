@@ -242,32 +242,32 @@
     </div>
   </div>
 <script>
+  // ====== ตัวแปรหลัก ======
   let currentAction = 'buy';
   let currentSymbol = document.getElementById('symbolInput').value || 'BTCUSDT';
   let lastPrice = null;
   let priceTimer = null;
 
+  // ====== Action ======
   function setAction(action) {
     currentAction = action;
     document.getElementById('selectedAction').textContent = action.toUpperCase();
-    // ปรับโทนปุ่ม (มีสีจาก CSS แล้ว แค่สลับ class เสริมให้ชัด)
     document.getElementById('buyBtn').classList.toggle('btn-success', action === 'buy');
     document.getElementById('sellBtn').classList.toggle('btn-danger', action === 'sell');
   }
 
+  // ====== Symbol ======
   function setSymbol(symbol, btn) {
     currentSymbol = symbol;
     document.getElementById('symbolInput').value = symbol;
     document.getElementById('selectedSymbol').textContent = symbol;
-
-    // toggle active
     document.querySelectorAll('.btn-outline-primary').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
-
-    initChart();      // โหลดกราฟใหม่
-    refreshPrice();   // ดึงราคาใหม่ทันที
+    initChart();
+    refreshPrice();
   }
 
+  // ====== Price ======
   async function fetchCurrentPrice(symbol) {
     const res = await fetch(`/api/price?symbol=${encodeURIComponent(symbol)}`);
     const data = await res.json();
@@ -283,9 +283,7 @@
         const entryEl = document.getElementById('entryPrice');
         if (entryEl) entryEl.value = p;
       }
-    } catch (e) {
-      // เงียบๆ ไว้รอบหน้า
-    }
+    } catch (e) {}
   }
 
   function startPricePolling() {
@@ -293,6 +291,7 @@
     priceTimer = setInterval(refreshPrice, 3000);
   }
 
+  // ====== Chart ======
   function initChart() {
     const chartDiv = document.getElementById('dynamic-graph');
     if (!chartDiv) return;
@@ -312,6 +311,7 @@
     });
   }
 
+  // ====== Recent Trades ======
   async function loadRecentTrades() {
     try {
       const tournamentId = '<%= tournament ? tournament._id : "" %>';
@@ -320,22 +320,23 @@
       const data = await res.json();
       const recentTradesDiv = document.getElementById('recentTrades');
       if (data.success && data.trades && data.trades.length) {
-        recentTradesDiv.innerHTML = data.trades.map(trade => `
-  <div class="trade-item">
-    <div class="d-flex justify-content-between">
-      <span class="badge badge-${trade.action === 'buy' ? 'success' : 'danger'}">
-        ${trade.action.toUpperCase()}
-      </span>
-      <small>${
-        trade.closedAt
-          ? new Date(trade.closedAt).toLocaleTimeString()
-          : new Date(trade.createdAt).toLocaleTimeString()
-      }</small>
-    </div>
-    <div>Lot: ${trade.lot} | Score: ${Number(trade.score).toFixed(2)}</div>
-  </div>
-`).join('');
-
+        recentTradesDiv.innerHTML = data.trades.map(trade => {
+          const isBuy = trade.action === 'buy' || trade.action === 'close-buy';
+          const badgeClass = isBuy ? 'badge-success' : 'badge-danger';
+          const actionText = trade.action.toUpperCase();
+          const timeText = trade.closedAt
+            ? new Date(trade.closedAt).toLocaleTimeString()
+            : new Date(trade.createdAt).toLocaleTimeString();
+          return `
+            <div class="trade-item">
+              <div class="d-flex justify-content-between">
+                <span class="badge ${badgeClass}">${actionText}</span>
+                <small>${timeText}</small>
+              </div>
+              <div>Lot: ${trade.lot} | Score: ${Number(trade.score).toFixed(2)}</div>
+            </div>
+          `;
+        }).join('');
       } else {
         recentTradesDiv.innerHTML = '<p class="text-muted text-center">No recent trades</p>';
       }
@@ -344,6 +345,7 @@
     }
   }
 
+  // ====== Open Positions ======
   async function loadOpenPositions() {
     try {
       const tournamentId = '<%= tournament ? tournament._id : "" %>';
@@ -376,6 +378,7 @@
     }
   }
 
+  // ====== Tournament Time ======
   function updateTimeLeft() {
     const tournamentEnd = new Date('<%= tournament ? tournament.end : "" %>');
     const now = new Date();
@@ -392,15 +395,13 @@
     }
   }
 
-  // ====== DOMReady ======
+  // ====== DOM Ready ======
   document.addEventListener('DOMContentLoaded', async () => {
-    // init
     setAction('buy');
     initChart();
     await refreshPrice();
     startPricePolling();
 
-    // data refresh
     loadRecentTrades();
     loadOpenPositions();
     updateTimeLeft();
@@ -410,73 +411,56 @@
       updateTimeLeft();
     }, 30000);
 
-    // submit
+    // ====== Submit Trade ======
     const tradeForm = document.getElementById('tradeForm');
     if (tradeForm) {
       tradeForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  // ดึงราคาปัจจุบันล่าสุด
-  await refreshPrice();
-  const priceToUse = lastPrice;
-  if (!priceToUse) {
-    return alert('Cannot fetch current price. Please try again.');
-  }
-
-const body = {
-  tournamentId: document.body.dataset.tournamentId, // ✅ อ่านจาก DOM
-  symbol: currentSymbol,
-  action: currentAction,
-  type: 'market',
-  lot: document.getElementById('lotSize').value,
-  entryPrice: priceToUse,
-  stopLoss: document.getElementById('stopLoss').value || null,
-  takeProfit: document.getElementById('takeProfit').value || null
-};
-
-          const res = await fetch('/api/trade', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        });
-
-        // ลบค่า SL/TP ที่ว่างเปล่า
-        ['stopLoss', 'takeProfit'].forEach(k => {
-          const v = formData.get(k);
-          if (!v || String(v).trim() === '') formData.delete(k);
-        });
+        e.preventDefault();
+        await refreshPrice();
+        const priceToUse = lastPrice;
+        if (!priceToUse) {
+          return alert('Cannot fetch current price. Please try again.');
+        }
+        const body = {
+          tournamentId: document.body.dataset.tournamentId,
+          symbol: currentSymbol,
+          action: currentAction,
+          type: 'market',
+          lot: document.getElementById('lotSize').value,
+          entryPrice: priceToUse,
+          stopLoss: document.getElementById('stopLoss').value || null,
+          takeProfit: document.getElementById('takeProfit').value || null
+        };
 
         const btn = document.getElementById('submitBtn');
-  const old = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Placing Order...';
+        const old = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Placing Order...';
 
-  try {
-    const res = await fetch('/api/trade', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    const data = await res.json();
-
-    if (res.ok && data.success) {
-      alert(`✅ Order placed!\nAction: ${data.trade.action}\nLot: ${data.trade.lot}`);
-      // 👉 refresh หน้าใหม่หลังจากสั่ง order เสร็จ
-      window.location.reload();
-    } else {
-      alert('Error: ' + (data.error || 'Unknown error'));
-    }
-  } catch (err) {
-    alert('Error placing order: ' + err.message);
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = old;
-  }
-});
+        try {
+          const res = await fetch('/api/trade', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            alert(`✅ Order placed!\nAction: ${data.trade.action}\nLot: ${data.trade.lot}`);
+            window.location.reload();
+          } else {
+            alert('Error: ' + (data.error || 'Unknown error'));
+          }
+        } catch (err) {
+          alert('Error placing order: ' + err.message);
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = old;
+        }
+      });
     }
   });
 
-  // ====== Edit/Close modal functions (คงของเดิม) ======
+  // ====== Edit/Close Modal ======
   function showEditModal(positionId, lot, stopLoss, takeProfit) {
     document.getElementById('editPositionId').value = positionId;
     document.getElementById('editStopLoss').value = stopLoss && stopLoss !== 'null' ? stopLoss : '';
@@ -531,31 +515,31 @@ const body = {
     const percent = Math.min(100, Math.max(1, (amount / closeCurrentLot) * 100));
     document.getElementById('closePercent').value = percent.toFixed(0);
   }
-async function saveClosePosition() {
-  await refreshPrice();
-  const closePrice = lastPrice;
-  if (!closePositionId || !closePrice) return alert('Missing position or price');
-  const lotToClose = parseFloat(document.getElementById('closeAmount').value);
-  if (!lotToClose || lotToClose <= 0) return alert('Invalid close amount');
-  try {
-    const res = await fetch('/api/close-position', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ positionId: closePositionId, lotToClose })
-    });
-    const data = await res.json();
-    if (data.success) {
-      alert(`✅ Position closed!\nPnL: ${data.pnl}\nScore: ${data.score}`);
-      closeCloseModal();
-      loadOpenPositions();
-      loadRecentTrades();
-    } else {
-      alert('Error: ' + (data.error || 'Close failed'));
+  async function saveClosePosition() {
+    await refreshPrice();
+    const closePrice = lastPrice;
+    if (!closePositionId || !closePrice) return alert('Missing position or price');
+    const lotToClose = parseFloat(document.getElementById('closeAmount').value);
+    if (!lotToClose || lotToClose <= 0) return alert('Invalid close amount');
+    try {
+      const res = await fetch('/api/close-position', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ positionId: closePositionId, lotToClose })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`✅ Position closed!\nPnL: ${data.pnl}\nScore: ${data.score}`);
+        closeCloseModal();
+        loadOpenPositions();
+        loadRecentTrades();
+      } else {
+        alert('Error: ' + (data.error || 'Close failed'));
+      }
+    } catch (err) {
+      alert('Error closing position: ' + err.message);
     }
-  } catch (err) {
-    alert('Error closing position: ' + err.message);
   }
-}
 </script>
   
 </body>

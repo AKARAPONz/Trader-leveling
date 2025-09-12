@@ -16,6 +16,7 @@ exports.getDashboardPage = async (req, res) => {
     let tradeHistory = [];
     let openPositions = [];
     let winner = null;
+    let winners = [];
     let accountBalance = 0;
     let isClosed = false;
 
@@ -32,6 +33,9 @@ exports.getDashboardPage = async (req, res) => {
         });
         entry.score = userTrades.reduce((sum, t) => sum + (t.score || 0), 0);
       }
+
+      // ✅ เรียง leaderboard ตามคะแนนมาก → น้อย
+      leaderboard.sort((a, b) => (b.score || 0) - (a.score || 0));
 
       // คำขอเข้าร่วม
       pendingRequests = await TournamentRequest.find({ tournamentId: tournament._id, status: 'pending' }).populate('userId');
@@ -61,8 +65,9 @@ exports.getDashboardPage = async (req, res) => {
       const now = new Date();
       if (tournament.end < now) {
         isClosed = true;
-        // หาผู้ชนะ
-        winner = leaderboard.sort((a, b) => b.balance - a.balance)[0];
+        winner = leaderboard[0];          // อันดับ 1
+        winners = leaderboard.slice(0, 2); // เอา 2 อันดับแรก
+        winners = leaderboard.slice(0, 3); // เอา 3 อันดับแรก
       }
     }
 
@@ -102,12 +107,13 @@ exports.getDashboardPage = async (req, res) => {
       tradeHistory,
       isClosed,
       winner,
+      winners,   // ✅ ส่ง top 2 ไปที่ view
       loggedIn: !!req.session.user,
       joinStatus,
       tournamentStart: tournament ? tournament.start : null,
       tournamentEnd: tournament ? tournament.end : null,
       accountBalance,
-      currentPrice: 107000.0, // mock
+      currentPrice: 107000.0,
       openPositions,
       totalProfit,
       totalLoss,
@@ -125,6 +131,7 @@ exports.getDashboardPage = async (req, res) => {
       tradeHistory: [],
       isClosed: false,
       winner: null,
+      winners: [],
       loggedIn: !!req.session.user,
       joinStatus: null,
       tournamentStart: null,

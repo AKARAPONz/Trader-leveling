@@ -222,8 +222,12 @@
                   <% leaderboard.forEach(function(entry, idx) { %>
                     <tr<%= entry._id.toString() === user._id.toString() ? ' class="table-success"' : '' %>>
                       <td><%= idx + 1 %></td>
-                     <td><%= entry.userId && entry.userId.username ? entry.userId.username : 'N/A' %></td>
-                      <td><%= entry.score ? entry.score.toFixed(2) : '0.00' %></td>
+                      <td>
+                        <%= entry.userId && entry.userId.username ? entry.userId.username : 'N/A' %>
+                      </td>
+                      <td>
+                        <%= entry.score ? entry.score.toFixed(2) : '0.00' %>
+                      </td>
                     </tr>
                   <% }) %>
                   <!-- แสดงคะแนนรวมของคุณ -->
@@ -237,11 +241,12 @@
           </div>
         </div>
 
-        <% if (isClosed && winner) { %>
-          <!-- แสดงผู้ชนะ tournament -->
+        <% if (isClosed && winners && winners.length > 0) { %>
           <div class="alert alert-success mt-4">
             <i class="bi bi-trophy"></i>
-            🏁 ผู้ชนะคือ <strong><%= winner.userId.username %></strong> ด้วยคะแนน <strong><%= winner.score %></strong>
+            <% winners.forEach(function(w, idx) { %>
+              🏆 อันดับ <%= idx+1 %>: <%= w.userId.username %> (คะแนน <%= w.score.toFixed(2) %>) <br>
+            <% }) %>
           </div>
         <% } %>
       <% } %>

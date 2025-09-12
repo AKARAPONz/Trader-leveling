@@ -5,16 +5,16 @@ const windowSize = 20; // จำนวนแท่งกราฟที่แส
 let chart;
 let candleSeries;
 
+// ===== Action & UI =====
 function setAction(action) {
   currentAction = action;
   document.getElementById('selectedAction').textContent = action.toUpperCase();
-
-  // ปุ่มสี (Buy=เขียว, Sell=แดง)
   document.getElementById('buyBtn').classList.toggle('btn-success', action === 'buy');
   document.getElementById('sellBtn').classList.toggle('btn-danger', action === 'sell');
 }
 
-// เพิ่ม tooltip ราคาบนกราฟ
+
+// ===== Tooltip Overlay =====
 function addPriceTooltipOverlay(container, chart) {
   let priceTooltip = document.createElement('div');
   priceTooltip.className = 'price-tooltip-overlay';
@@ -29,6 +29,7 @@ function addPriceTooltipOverlay(container, chart) {
   priceTooltip.style.zIndex = 20;
   priceTooltip.style.display = 'none';
   container.appendChild(priceTooltip);
+
   chart.subscribeCrosshairMove(function(param) {
     if (param.point && param.seriesPrices && candleSeries) {
       let price = param.price || param.seriesPrices.get(candleSeries);
@@ -46,7 +47,8 @@ function addPriceTooltipOverlay(container, chart) {
   });
 }
 
-// แสดง toast แจ้งผลการเทรด
+
+// ===== Toast =====
 function showTradeToast(message, isError) {
   let toast = document.createElement('div');
   toast.className = 'trade-toast';
@@ -72,17 +74,15 @@ function showTradeToast(message, isError) {
   }, 2000);
 }
 
-// โหลด recent trades จาก backend
+
+// ===== Recent Trades =====
 function loadRecentTrades() {
-  // ดึง recent trades จาก backend และแสดงผล
   try {
     let tournamentId = document.body.getAttribute('data-tournament-id');
-    if (!tournamentId) {
-      tournamentId = getTournamentId();
-    }
+    if (!tournamentId) tournamentId = getTournamentId();
     if (!tournamentId) return;
-fetch(`/api/trade/positions?tournamentId=${tournamentId}`)
 
+    fetch(`/api/trade/positions?tournamentId=${tournamentId}`)
       .then(res => res.json())
       .then(data => {
         const recentTradesDiv = document.getElementById('recentTrades');
@@ -109,15 +109,16 @@ fetch(`/api/trade/positions?tournamentId=${tournamentId}`)
   }
 }
 
-// โหลด open positions จาก backend
+
+// ===== Open Positions =====
 function loadOpenPositions() {
   const tournamentId = getTournamentId && getTournamentId();
   if (!tournamentId) return;
   const openPositionsDiv = document.getElementById('openPositions');
   if (!openPositionsDiv) return;
   openPositionsDiv.innerHTML = '<p class="text-muted text-center">Loading open positions...</p>';
-fetch(`/api/trade/positions?tournamentId=${tournamentId}`)
 
+  fetch(`/api/trade/positions?tournamentId=${tournamentId}`)
     .then(res => res.json())
     .then(data => {
       if (!data.success || !data.positions || !data.positions.length) {
@@ -143,8 +144,8 @@ fetch(`/api/trade/positions?tournamentId=${tournamentId}`)
     });
 }
 
-// ฟังก์ชันสำหรับ submit ฟอร์มเทรด, ตรวจสอบ tournament, และ UI
-// Initialize
+
+// ===== DOM Ready =====
 document.addEventListener('DOMContentLoaded', function() {
   // Mouse move price tooltip overlay
   var chartDiv = document.getElementById('dynamic-graph');
@@ -183,24 +184,24 @@ document.addEventListener('DOMContentLoaded', function() {
       priceTooltip.style.display = 'none';
     });
   }
+
   // Set initial symbol from data attributes
   var initialSymbol = document.body.getAttribute('data-initial-symbol') || '';
   if (initialSymbol) {
     currentSymbol = initialSymbol;
   }
-  
+
   // Set initial symbol if available
   var symbolElement = document.getElementById('symbolSelect');
   if (symbolElement) {
     currentSymbol = symbolElement.value;
   }
-  
+
   // Initialize if tournament exists
   var hasTournament = document.body.getAttribute('data-has-tournament') === 'true';
   if (hasTournament) {
     initChart();
     setAction('buy');
-    // Check tournament status and update UI
     checkTournamentStatus();
   }
 });
