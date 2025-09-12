@@ -13,7 +13,6 @@ function openEditModal(id, name, balance, start, end) {
   document.getElementById('editTournamentId').value = id;
   document.getElementById('editName').value = name;
   document.getElementById('editBalance').value = balance;
-  document.getElementById('editStart').value = start.slice(0, 16);
   document.getElementById('editEnd').value = end.slice(0, 16);
   document.getElementById('editModal').style.display = 'block';
 }
