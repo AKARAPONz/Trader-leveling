@@ -1,18 +1,8 @@
 // ตัวแปรสำหรับจัดการสถานะการเทรดและกราฟ
-let currentAction = 'buy'; // buy/sell
 let windowStart = 0; // index เริ่มต้นของ window กราฟ
 const windowSize = 20; // จำนวนแท่งกราฟที่แสดง
 let chart;
 let candleSeries;
-
-// ===== Action & UI =====
-function setAction(action) {
-  currentAction = action;
-  document.getElementById('selectedAction').textContent = action.toUpperCase();
-  document.getElementById('buyBtn').classList.toggle('btn-success', action === 'buy');
-  document.getElementById('sellBtn').classList.toggle('btn-danger', action === 'sell');
-}
-
 
 // ===== Tooltip Overlay =====
 function addPriceTooltipOverlay(container, chart) {
@@ -201,7 +191,6 @@ document.addEventListener('DOMContentLoaded', function() {
   var hasTournament = document.body.getAttribute('data-has-tournament') === 'true';
   if (hasTournament) {
     initChart();
-    setAction('buy');
     checkTournamentStatus();
   }
 });
