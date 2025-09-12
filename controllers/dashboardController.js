@@ -1,141 +1,140 @@
-const TradeLog = require('../models/tradeLog');
-const User = require('../models/User');
-const TournamentRequest = require('../models/tournamentRequest');
 const Tournament = require('../models/tournament');
-const OpenPosition = require('../models/openPosition'); // ✅ เพิ่มบรรทัดนี้
-const mongoose = require('mongoose');
-const TournamentUser = require('../models/tournamentUser'); // เพิ่ม import
+const TournamentRequest = require('../models/tournamentRequest');
+const TournamentUser = require('../models/tournamentUser');
+const TradeLog = require('../models/tradeLog');
+const OpenPosition = require('../models/openPosition');
 
-exports.index = async (req, res) => {
-  const tournamentId = req.query.tournamentId;
-
-  if (!tournamentId) {
-    return res.redirect('/tournament');
-  }
-
-  let tournamentObjectId;
+// Dashboard Controller
+exports.getDashboardPage = async (req, res) => {
   try {
-    tournamentObjectId = new mongoose.Types.ObjectId(tournamentId);
-  } catch (error) {
-    return res.redirect('/tournament');
-  }
+    const tournamentId = req.query.tournamentId;
+    const tournament = tournamentId ? await Tournament.findById(tournamentId) : null;
 
-  const tournament = await Tournament.findById(tournamentObjectId);
-  if (!tournament) {
-    return res.redirect('/tournament');
-  }
+    let leaderboard = [];
+    let pendingRequests = [];
+    let joinStatus = null;
+    let tradeHistory = [];
+    let openPositions = [];
+    let winner = null;
+    let accountBalance = 0;
+    let isClosed = false;
 
-  const now = new Date();
-  const isRunning = now >= tournament.start && now <= tournament.end;
-  const isEnd = now > tournament.end;
+    if (tournament) {
+      // ผู้เข้าร่วม
+      leaderboard = await TournamentUser.find({ tournamentId: tournament._id }).populate('userId');
 
-  if (!isRunning && !isEnd) {
-    return res.redirect('/tournament');
-  }
-
-  const isClosed = isEnd;
-
-  // ดึง trade log เฉพาะ action ที่เกี่ยวข้อง
-  const validActions = ['buy', 'sell', 'close-buy', 'close-sell'];
-  const userTrades = await TradeLog.find({
-    tournamentId: tournamentObjectId,
-    userId: req.session.user._id,
-    action: { $in: validActions }
-  });
-
-  const totalScore = userTrades.reduce((acc, trade) => acc + (trade.score || 0), 0);
-
-  // Aggregate คะแนนรวมของทุก user ใน tournament เฉพาะ action ที่เกี่ยวข้อง
-  const logs = await TradeLog.aggregate([
-    { $match: { tournamentId: tournamentObjectId, action: { $in: validActions } } },
-    {
-      $group: {
-        _id: '$userId',
-        score: { $sum: { $ifNull: ['$score', 0] } }
+      // ✅ เติม score ให้แต่ละ user
+      for (let entry of leaderboard) {
+        const userTrades = await TradeLog.find({
+          tournamentId: tournament._id,
+          userId: entry.userId._id,
+          action: { $in: ['close-buy', 'close-sell'] }
+        });
+        entry.score = userTrades.reduce((sum, t) => sum + (t.score || 0), 0);
       }
-    },
-    { $sort: { score: -1 } }
-  ]);
 
-  // Get all accepted participants
-  const acceptedRequests = await TournamentRequest.find({
-    tournamentId: tournamentObjectId,
-    status: 'accepted'
-  }).populate('userId');
+      // คำขอเข้าร่วม
+      pendingRequests = await TournamentRequest.find({ tournamentId: tournament._id, status: 'pending' }).populate('userId');
 
-  // Build a map of userId to score from logs
-  const scoreMap = new Map();
-  logs.forEach(entry => {
-    scoreMap.set(entry._id.toString(), entry.score);
-  });
+      // เช็คสถานะผู้ใช้
+      if (req.session.user) {
+        const reqJoin = await TournamentRequest.findOne({
+          tournamentId: tournament._id,
+          userId: req.session.user._id
+        });
+        joinStatus = reqJoin ? reqJoin.status : null;
+      }
 
-  // Build leaderboard: all accepted participants, with score if exists, else 0
-  const leaderboard = acceptedRequests.map(req => {
-    const user = req.userId;
-    return {
-      _id: user._id,
-      name: user.username || user.name,
-      score: scoreMap.get(user._id.toString()) || 0
-    };
-  });
+      // ประวัติการเทรด
+      tradeHistory = await TradeLog.find({ tournamentId: tournament._id }).populate('userId');
 
-  // Sort leaderboard by score descending
-  leaderboard.sort((a, b) => b.score - a.score);
+      // Open positions
+      openPositions = await OpenPosition.find({ tournamentId: tournament._id }).populate('userId');
 
-  let winner = null;
-  if (isClosed && leaderboard.length > 0) {
-    winner = leaderboard[0];
+      // Balance ของ user ปัจจุบัน
+      const tournamentUser = req.session.user
+        ? await TournamentUser.findOne({ tournamentId: tournament._id, userId: req.session.user._id })
+        : null;
+      accountBalance = tournamentUser ? tournamentUser.balance : 0;
+
+      // ปิด tournament
+      const now = new Date();
+      if (tournament.end < now) {
+        isClosed = true;
+        // หาผู้ชนะ
+        winner = leaderboard.sort((a, b) => b.balance - a.balance)[0];
+      }
+    }
+
+    // ✅ คำนวณกำไร/ขาดทุน/คะแนนรวม ของ user ปัจจุบัน
+    let totalProfit = 0;
+    let totalLoss = 0;
+    let totalScore = 0;
+
+    if (req.session.user && tournament) {
+      const closedTrades = await TradeLog.find({
+        tournamentId: tournament._id,
+        userId: req.session.user._id,
+        action: { $in: ['close-buy', 'close-sell'] }
+      });
+
+      totalProfit = closedTrades
+        .filter(t => t.pnl > 0)
+        .reduce((sum, t) => sum + t.pnl, 0);
+
+      totalLoss = closedTrades
+        .filter(t => t.pnl < 0)
+        .reduce((sum, t) => sum + Math.abs(t.pnl), 0);
+
+      totalScore = closedTrades.reduce((sum, t) => sum + (t.score || 0), 0);
+    }
+
+    // Render
+    res.render('dashboard', {
+      leaderboard,
+      pendingRequests,
+      user: req.session.user,
+      tournamentId,
+      tournament,
+      tournamentStatus: tournament
+        ? (new Date() > tournament.end ? 'END' : 'RUNNING')
+        : null,
+      tradeHistory,
+      isClosed,
+      winner,
+      loggedIn: !!req.session.user,
+      joinStatus,
+      tournamentStart: tournament ? tournament.start : null,
+      tournamentEnd: tournament ? tournament.end : null,
+      accountBalance,
+      currentPrice: 107000.0, // mock
+      openPositions,
+      totalProfit,
+      totalLoss,
+      totalScore
+    });
+  } catch (err) {
+    console.error('❌ Dashboard Error:', err.message);
+    res.render('dashboard', {
+      leaderboard: [],
+      pendingRequests: [],
+      user: req.session.user,
+      tournamentId: null,
+      tournament: null,
+      tournamentStatus: null,
+      tradeHistory: [],
+      isClosed: false,
+      winner: null,
+      loggedIn: !!req.session.user,
+      joinStatus: null,
+      tournamentStart: null,
+      tournamentEnd: null,
+      accountBalance: 0,
+      currentPrice: 0,
+      openPositions: [],
+      totalProfit: 0,
+      totalLoss: 0,
+      totalScore: 0
+    });
   }
-
-  const pendingRequests = await TournamentRequest.find({
-    tournamentId: tournamentObjectId,
-    status: 'pending'
-  }).populate('userId');
-
-  const request = await TournamentRequest.findOne({
-    tournamentId: tournamentObjectId,
-    userId: req.session.user._id
-  });
-
-  const joinStatus = request?.status || null;
-
-  const tradeHistory = await TradeLog.find({
-    tournamentId: tournamentObjectId,
-    userId: req.session.user._id
-  }).sort({ createdAt: -1 });
-
-  // ดึง TournamentUser
-  let tournamentUser = await TournamentUser.findOne({ tournamentId: tournamentObjectId, userId: req.session.user._id });
-  const accountBalance = tournamentUser ? tournamentUser.balance : 0;
-
-  // ✅ ดึง openPositions ของผู้ใช้งานนี้ใน tournament ปัจจุบัน
- const openPositions = await OpenPosition.find({
-  tournamentId: tournamentObjectId,
-  userId: req.session.user._id
-});
-
-  // DEBUG: log userTrades, totalScore, leaderboard
-  console.log('userTrades:', userTrades.map(t => ({action: t.action, score: t.score, createdAt: t.createdAt})));
-  console.log('totalScore:', totalScore);
-  console.log('leaderboard:', leaderboard);
-
-  res.render('dashboard', {
-    leaderboard,
-    pendingRequests,
-    user: req.session.user,
-    tournamentId,
-    tournament, // เพิ่ม tournament
-    tournamentStatus: isEnd ? 'END' : 'RUNNING',
-    tradeHistory,
-    isClosed,
-    winner,
-    loggedIn: !!req.session.user,
-    joinStatus,
-    tournamentStart: tournament.start,
-    tournamentEnd: tournament.end,
-    accountBalance,
-    currentPrice: 107000.00, // ✅ เพิ่มไว้ใช้ autofill
-    openPositions, // ✅ ส่งค่าไปหน้า dashboard
-    totalScore // ส่งคะแนนรวมของคุณ
-  });
 };

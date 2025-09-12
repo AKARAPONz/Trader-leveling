@@ -23,7 +23,8 @@
     .badge-primary { background-color: #3b82f6; color: white; }
   </style>
 </head>
-<body data-has-tournament="<%= tournament ? 'true' : 'false' %>" data-tournament-id="<%= tournament ? tournament._id : '' %>">
+<body data-has-tournament="<%= tournament ? 'true' : 'false' %>" 
+      data-tournament-id="<%= tournament ? tournament._id : '' %>">
 
   <!-- Sidebar -->
   <div class="sidebar">
@@ -79,7 +80,7 @@
       <div class="card mb-4">
         <div class="card-header">
           <h5><i class="bi bi-trophy"></i> Tournament: <%= tournament.name %></h5>
-          <small class="text-muted">Balance: $<%= userBalance %></small>
+          <small class="text-muted">Balance: $<%= userBalance.toFixed(2) %></small>
         </div>
         <div class="card-body d-flex justify-content-between">
           <div><strong>Status:</strong> 
@@ -413,20 +414,31 @@
     const tradeForm = document.getElementById('tradeForm');
     if (tradeForm) {
       tradeForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+  e.preventDefault();
 
-        // ดึงราคาปัจจุบันล่าสุดใส่ entryPrice
-        await refreshPrice();
-        const priceToUse = lastPrice;
-        if (!priceToUse) {
-          return alert('Cannot fetch current price. Please try again.');
-        }
+  // ดึงราคาปัจจุบันล่าสุด
+  await refreshPrice();
+  const priceToUse = lastPrice;
+  if (!priceToUse) {
+    return alert('Cannot fetch current price. Please try again.');
+  }
 
-        const formData = new FormData(tradeForm);
-        formData.set('symbol', currentSymbol);
-        formData.set('action', currentAction);
-        formData.set('type', 'market');            // หน้านี้ให้ Market ตามที่คุณต้องการ
-        formData.set('entryPrice', String(priceToUse));
+const body = {
+  tournamentId: document.body.dataset.tournamentId, // ✅ อ่านจาก DOM
+  symbol: currentSymbol,
+  action: currentAction,
+  type: 'market',
+  lot: document.getElementById('lotSize').value,
+  entryPrice: priceToUse,
+  stopLoss: document.getElementById('stopLoss').value || null,
+  takeProfit: document.getElementById('takeProfit').value || null
+};
+
+          const res = await fetch('/api/trade', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
 
         // ลบค่า SL/TP ที่ว่างเปล่า
         ['stopLoss', 'takeProfit'].forEach(k => {
@@ -435,29 +447,32 @@
         });
 
         const btn = document.getElementById('submitBtn');
-        const old = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Placing Order...';
+  const old = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Placing Order...';
 
-        try {
-          const res = await fetch('/api/trade', { method: 'POST', body: formData });
-          const data = await res.json();
-          if (res.ok && data.success) {
-            alert(`Order placed!\nAction: ${data.trade.action}\nLot: ${data.trade.lot}\nScore: ${data.trade.score}`);
-            tradeForm.reset();
-            setAction('buy');
-            await loadRecentTrades();
-            await loadOpenPositions();
-          } else {
-            alert('Error: ' + (data.error || 'Unknown error'));
-          }
-        } catch (err) {
-          alert('Error placing order: ' + err.message);
-        } finally {
-          btn.disabled = false;
-          btn.innerHTML = old;
-        }
-      });
+  try {
+    const res = await fetch('/api/trade', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      alert(`✅ Order placed!\nAction: ${data.trade.action}\nLot: ${data.trade.lot}`);
+      // 👉 refresh หน้าใหม่หลังจากสั่ง order เสร็จ
+      window.location.reload();
+    } else {
+      alert('Error: ' + (data.error || 'Unknown error'));
+    }
+  } catch (err) {
+    alert('Error placing order: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = old;
+  }
+});
     }
   });
 

@@ -49,18 +49,29 @@ router.post('/', async (req, res) => {
     const pnl = score; // ใช้ค่าเดียวกัน
 
     // ✅ สร้าง TradeLog
-await TradeLog.create({
-  tournamentId: pos.tournamentId,
-  userId: pos.userId,
-  symbol: pos.symbol,
-  action: `close-${pos.action}`,
-  lot: pos.lot,
-  entryPrice: pos.entryPrice,
-  closePrice: price,
-  pnl: score,
-  score: score,
-  closedAt: new Date()   // ✅ เพิ่มตรงนี้
-});
+    await TradeLog.create({
+      tournamentId: position.tournamentId,
+      userId: position.userId,
+      symbol: position.symbol,
+      action: `close-${position.action}`,
+      lot: closeLot,
+      entryPrice: position.entryPrice,
+      closePrice: closePrice,
+      pnl: score,
+      score: score,
+      closedAt: new Date()
+    });
+
+    // ✅ อัปเดต Balance ของ TournamentUser
+    const tournamentUser = await TournamentUser.findOne({
+      tournamentId: position.tournamentId,
+      userId: position.userId
+    });
+
+    if (tournamentUser) {
+      tournamentUser.balance += pnl;
+      await tournamentUser.save();
+    }
 
     // ✅ อัปเดต Lot ที่เหลือ
     position.lot -= closeLot;

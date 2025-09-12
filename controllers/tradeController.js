@@ -73,21 +73,25 @@ exports.getTradePage = async (req, res) => {
       tournamentStatus = 'REGISTRATION';
     }
 
-    const userTrades = await TradeLog.find({
-      tournamentId: tournament._id,
-      userId: req.session.user._id
-    });
-
-    const totalPnL = userTrades.reduce((acc, trade) => acc + (trade.pnl || 0), 0);
-
+    // ✅ หา TournamentUser หรือสร้างใหม่ถ้าไม่มี
     let tournamentUser = await TournamentUser.findOne({
       tournamentId: tournament._id,
       userId: req.session.user._id
     });
 
-    let userBalance = (tournamentUser && tournamentUser.balance > 0)
-      ? tournamentUser.balance
-      : tournament.balance + totalPnL;
+    if (!tournamentUser) {
+      console.log('⚠️ TournamentUser not found, creating new one');
+      tournamentUser = new TournamentUser({
+        tournamentId: tournament._id,
+        userId: req.session.user._id,
+        balance: tournament.balance
+      });
+      await tournamentUser.save();
+    }
+
+    console.log('✅ TournamentUser:', tournamentUser);
+
+    let userBalance = tournamentUser.balance;
 
     res.render('trade', {
       tournament,

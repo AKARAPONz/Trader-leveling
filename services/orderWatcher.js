@@ -24,53 +24,53 @@ async function checkPositions() {
         if (pos.takeProfit && price <= pos.takeProfit) shouldClose = true;
       }
 
-      if (shouldClose) {
-        console.log(`📉 Auto-close triggered for ${pos.symbol} at ${price}`);
+if (shouldClose) {
+  console.log(`📉 Auto-close triggered for ${pos.symbol} at ${price}`);
 
-        let score = 0;
-if (pos.action === 'buy') {
-  if (pos.entryPrice < price) {
-    score = (price - pos.entryPrice) * pos.lot;
-  } else {
-    score = -((pos.entryPrice - price) * pos.lot);
+  let score = 0;
+  if (pos.action === 'buy') {
+    if (pos.entryPrice < price) {
+      score = (price - pos.entryPrice) * pos.lot;
+    } else {
+      score = -((pos.entryPrice - price) * pos.lot);
+    }
+  } else if (pos.action === 'sell') {
+    if (pos.entryPrice > price) {
+      score = (pos.entryPrice - price) * pos.lot;
+    } else {
+      score = -((price - pos.entryPrice) * pos.lot);
+    }
   }
-} else if (pos.action === 'sell') {
-  if (pos.entryPrice > price) {
-    score = (pos.entryPrice - price) * pos.lot;
-  } else {
-    score = -((price - pos.entryPrice) * pos.lot);
+
+  const pnl = score;
+
+  // ✅ บันทึก TradeLog
+  await TradeLog.create({
+    tournamentId: pos.tournamentId,
+    userId: pos.userId,
+    symbol: pos.symbol,
+    action: `close-${pos.action}`,
+    lot: pos.lot,
+    entryPrice: pos.entryPrice,
+    closePrice: price,
+    pnl,
+    score,
+    closedAt: new Date()
+  });
+
+  // ✅ อัปเดต balance
+  const tu = await TournamentUser.findOne({
+    tournamentId: pos.tournamentId,
+    userId: pos.userId
+  });
+  if (tu) {
+    tu.balance += pnl;
+    await tu.save();
   }
+
+  // ✅ ลบ position
+  await OpenPosition.findByIdAndDelete(pos._id);
 }
-
-const pnl = score; // ใช้ค่าเดียวกัน
-
-        // ✅ บันทึกใน TradeLog
-await TradeLog.create({
-  tournamentId: pos.tournamentId,
-  userId: pos.userId,
-  symbol: pos.symbol,
-  action: `close-${pos.action}`,
-  lot: pos.lot,
-  entryPrice: pos.entryPrice,
-  closePrice: price,
-  pnl: score,
-  score: score,
-  closedAt: new Date()   // ✅ เพิ่มตรงนี้
-});
-
-        // ✅ อัปเดต balance ของ TournamentUser
-        const tu = await TournamentUser.findOne({
-          tournamentId: pos.tournamentId,
-          userId: pos.userId
-        });
-        if (tu) {
-          tu.balance += pnl;
-          await tu.save();
-        }
-
-        // ✅ ลบ position ออกจาก OpenPosition
-        await OpenPosition.findByIdAndDelete(pos._id);
-      }
     }
   } catch (err) {
     console.error('❌ Error in checkPositions:', err.message);

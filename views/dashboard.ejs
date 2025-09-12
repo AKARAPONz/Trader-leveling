@@ -222,7 +222,7 @@
                   <% leaderboard.forEach(function(entry, idx) { %>
                     <tr<%= entry._id.toString() === user._id.toString() ? ' class="table-success"' : '' %>>
                       <td><%= idx + 1 %></td>
-                      <td><%= entry.name %></td>
+                     <td><%= entry.userId && entry.userId.username ? entry.userId.username : 'N/A' %></td>
                       <td><%= entry.score ? entry.score.toFixed(2) : '0.00' %></td>
                     </tr>
                   <% }) %>
@@ -241,7 +241,7 @@
           <!-- แสดงผู้ชนะ tournament -->
           <div class="alert alert-success mt-4">
             <i class="bi bi-trophy"></i>
-            🏁 ผู้ชนะคือ <strong><%= winner.name %></strong> ด้วยคะแนน <strong><%= winner.score %></strong>
+            🏁 ผู้ชนะคือ <strong><%= winner.userId.username %></strong> ด้วยคะแนน <strong><%= winner.score %></strong>
           </div>
         <% } %>
       <% } %>
