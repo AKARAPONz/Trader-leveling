@@ -698,3 +698,130 @@ p {
   background-color: var(--primary-color);
   color: var(--text-light);
 }
+/* =======================================================
+   GLOBAL RESPONSIVE DESIGN FOR ALL PAGES
+   ======================================================= */
+@media (max-width: 992px) {
+  /* ===== Sidebar ===== */
+  .sidebar {
+    width: 240px;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .main {
+    margin-left: 0 !important;
+  }
+
+  /* ===== Topbar ===== */
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  /* ===== User info ===== */
+  .user-info {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* ===== Cards / Containers ===== */
+  .card,
+  .chart-container,
+  .profile-section,
+  .tournament-section,
+  .trade-panel,
+  .recent-trades,
+  .level-card {
+    width: 100%;
+    margin: 0 auto 1rem;
+  }
+
+  /* ===== Table ===== */
+  .table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* ===== Buttons ===== */
+  button, .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  /* ===== Crypto buttons (trade/home/dashboard) ===== */
+  .crypto-buttons,
+  .crypto-list,
+  .crypto-options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    padding: 0.5rem;
+  }
+  .crypto-buttons button,
+  .crypto-list button {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+
+  /* ===== Charts ===== */
+  .trading-chart,
+  iframe.tradingview-widget-container__widget {
+    width: 100% !important;
+    height: 350px !important;
+  }
+
+  /* ===== Grids / Columns ===== */
+  .row {
+    flex-direction: column;
+  }
+  .col-4,
+  .col-6,
+  .col-8,
+  .col-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  /* ===== Profile Page ===== */
+  .profile-info,
+  .profile-settings {
+    width: 100%;
+  }
+
+  /* ===== Tournament tables ===== */
+  .tournament-table-container {
+    overflow-x: auto;
+  }
+
+  /* ===== Prevent Horizontal Scroll ===== */
+  body, html {
+    overflow-x: hidden;
+  }
+}
+
+/* ===== Very Small Devices (Phones under 480px) ===== */
+@media (max-width: 480px) {
+  .topbar h2, .card-title {
+    font-size: 1rem;
+  }
+  .btn {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+  }
+  .avatar {
+    width: 40px;
+    height: 40px;
+  }
+  .trading-chart {
+    height: 300px !important;
+  }
+}
