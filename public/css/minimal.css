@@ -857,21 +857,3 @@ p {
     padding: 4px 8px;
   }
 }
-
-/* ===== Sidebar Toggle Button ===== */
-.menu-toggle {
-  display: none; /* ซ่อนบน Desktop */
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-  font-size: 1.25rem;
-  cursor: pointer;
-  box-shadow: var(--shadow-md);
-  transition: background 0.2s ease;
-}
-
-.menu-toggle:hover {
-  background: var(--primary-hover);
-}
