@@ -825,3 +825,35 @@ p {
     height: 300px !important;
   }
 }
+
+/* ====== FIX: ปุ่มเหรียญล้นจอบนมือถือ ====== */
+.crypto-buttons,
+.crypto-list,
+.crypto-options {
+  display: flex;
+  flex-wrap: wrap;          /* ✅ ให้ขึ้นบรรทัดใหม่อัตโนมัติ */
+  justify-content: center;  /* ✅ จัดปุ่มให้อยู่กึ่งกลาง */
+  gap: 8px;                 /* ✅ เว้นระยะระหว่างปุ่ม */
+  padding: 0.5rem;
+  overflow-x: hidden;       /* ✅ กันการ scroll แนวนอน */
+  max-width: 100%;
+}
+
+.crypto-buttons button,
+.crypto-list button,
+.crypto-options button {
+  flex: 1 1 auto;           /* ✅ ให้ปุ่มยืดได้ตามพื้นที่ */
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  white-space: nowrap;      /* ป้องกันตัวอักษรหักบรรทัด */
+}
+
+/* Responsive เพิ่มเติม */
+@media (max-width: 480px) {
+  .crypto-buttons button,
+  .crypto-list button {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+}
