@@ -1,6 +1,3 @@
-// This file contains HTML, not JS. Rename to tournament.html and move to public or views folder for proper usage.
-// If you want a pure JS file, provide only JS code.
-
 <!DOCTYPE html>
 <html lang="en">
   <head>

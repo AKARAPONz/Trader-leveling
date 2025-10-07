@@ -21,6 +21,10 @@
     .badge-success { background-color: #10b981; color: white; }
     .badge-danger { background-color: #ef4444; color: white; }
     .badge-primary { background-color: #3b82f6; color: white; }
+    .badge-primary { background-color: #3b82f6; color: white; }   /* BUY OPEN */
+    .badge-warning { background-color: #f59e0b; color: white; }   /* SELL OPEN */
+    .badge-success { background-color: #10b981; color: white; }   /* CLOSE-BUY */
+    .badge-danger  { background-color: #ef4444; color: white; }   /* CLOSE-SELL */
   </style>
 </head>
 <body data-has-tournament="<%= tournament ? 'true' : 'false' %>" 
@@ -311,39 +315,69 @@
     });
   }
 
-  // ====== Recent Trades ======
-  async function loadRecentTrades() {
-    try {
-      const tournamentId = '<%= tournament ? tournament._id : "" %>';
-      if (!tournamentId) return;
-      const res = await fetch(`/api/trade/recent?tournamentId=${tournamentId}`);
-      const data = await res.json();
-      const recentTradesDiv = document.getElementById('recentTrades');
-      if (data.success && data.trades && data.trades.length) {
-        recentTradesDiv.innerHTML = data.trades.map(trade => {
-          const isBuy = trade.action === 'buy' || trade.action === 'close-buy';
-          const badgeClass = isBuy ? 'badge-success' : 'badge-danger';
+// ====== Recent Trades ======
+async function loadRecentTrades() {
+  try {
+    const tournamentId = '<%= tournament ? tournament._id : "" %>';
+    if (!tournamentId) return;
+
+    const res = await fetch(`/api/trade/recent?tournamentId=${tournamentId}`);
+    const data = await res.json();
+    const recentTradesDiv = document.getElementById('recentTrades');
+
+    if (data.success && data.trades && data.trades.length) {
+      // ✅ แยกส่วน OPEN / CLOSED
+      const openTrades = data.trades.filter(t => t.status === 'OPEN');
+      const closedTrades = data.trades.filter(t => t.status === 'CLOSED');
+
+      let html = '';
+
+      if (openTrades.length) {
+        html += `<h6 class="text-primary mb-2"><i class="bi bi-play-circle"></i> Open Positions</h6>`;
+        html += openTrades.map(trade => {
+          const badgeClass = trade.action === 'buy' ? 'badge-primary' : 'badge-warning';
           const actionText = trade.action.toUpperCase();
-          const timeText = trade.closedAt
-            ? new Date(trade.closedAt).toLocaleTimeString()
-            : new Date(trade.createdAt).toLocaleTimeString();
+          const timeText = new Date(trade.createdAt).toLocaleTimeString();
           return `
             <div class="trade-item">
-              <div class="d-flex justify-content-between">
-                <span class="badge ${badgeClass}">${actionText}</span>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="badge ${badgeClass}">${actionText} (OPEN)</span>
                 <small>${timeText}</small>
               </div>
-              <div>Lot: ${trade.lot} | Score: ${Number(trade.score).toFixed(2)}</div>
+              <div>${trade.symbol} | Lot: ${trade.lot} | Entry: ${trade.entryPrice}</div>
             </div>
           `;
         }).join('');
-      } else {
-        recentTradesDiv.innerHTML = '<p class="text-muted text-center">No recent trades</p>';
       }
-    } catch {
-      document.getElementById('recentTrades').innerHTML = '<p class="text-muted text-center">Error loading trades</p>';
+
+      if (closedTrades.length) {
+        html += `<h6 class="text-muted mt-3 mb-2"><i class="bi bi-check-circle"></i> Closed Trades</h6>`;
+        html += closedTrades.map(trade => {
+          const isBuy = trade.action === 'close-buy';
+          const badgeClass = isBuy ? 'badge-success' : 'badge-danger';
+          const actionText = trade.action.toUpperCase();
+          const timeText = new Date(trade.closedAt).toLocaleTimeString();
+          return `
+            <div class="trade-item">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="badge ${badgeClass}">${actionText}</span>
+                <small>${timeText}</small>
+              </div>
+              <div>${trade.symbol} | Lot: ${trade.lot} | Score: ${Number(trade.score).toFixed(2)}</div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      recentTradesDiv.innerHTML = html;
+    } else {
+      recentTradesDiv.innerHTML = '<p class="text-muted text-center">No recent trades</p>';
     }
+  } catch (err) {
+    document.getElementById('recentTrades').innerHTML = '<p class="text-danger text-center">Error loading trades</p>';
+    console.error('Recent trades error:', err.message);
   }
+}
 
   // ====== Open Positions ======
   async function loadOpenPositions() {

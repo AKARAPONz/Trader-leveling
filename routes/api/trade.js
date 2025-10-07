@@ -149,21 +149,58 @@ router.get('/positions', async (req, res) => {
   }
 });
 
-// ✅ ดึง Recent Trades (เฉพาะที่ปิดแล้ว)
+// ✅ ดึง Recent Trades (รวม open + closed)
 router.get('/recent', async (req, res) => {
   try {
     const { tournamentId } = req.query;
     if (!tournamentId) return res.json({ success: true, trades: [] });
 
-    const trades = await TradeLog.find({
-      tournamentId,
-      userId: req.session.user._id,
-      action: { $in: ['close-buy', 'close-sell'] }
-    })
-      .sort({ closedAt: -1 })
-      .limit(20);
+    const userId = req.session.user._id;
 
-    res.json({ success: true, trades });
+    // 🔹 ดึง order ที่เปิดอยู่ (OpenPosition)
+    const openPositions = await OpenPosition.find({ tournamentId, userId })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .lean();
+
+    // 🔹 ดึง order ที่ปิดแล้ว (TradeLog)
+    const closedTrades = await TradeLog.find({ tournamentId, userId })
+      .sort({ closedAt: -1 })
+      .limit(10)
+      .lean();
+
+    // 🔹 รวมรายการทั้งหมด
+    const combined = [
+      ...openPositions.map(p => ({
+        _id: p._id,
+        symbol: p.symbol,
+        action: p.action,
+        lot: p.lot,
+        entryPrice: p.entryPrice,
+        closePrice: null,
+        score: 0,
+        status: 'OPEN',
+        createdAt: p.createdAt,
+        closedAt: null
+      })),
+      ...closedTrades.map(t => ({
+        _id: t._id,
+        symbol: t.symbol,
+        action: t.action,
+        lot: t.lot,
+        entryPrice: t.entryPrice,
+        closePrice: t.closePrice,
+        score: t.score || 0,
+        status: 'CLOSED',
+        createdAt: t.createdAt || t.closedAt,
+        closedAt: t.closedAt
+      }))
+    ];
+
+    // 🔹 เรียงตามเวลาใหม่สุดก่อน
+    combined.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    res.json({ success: true, trades: combined.slice(0, 20) });
   } catch (err) {
     console.error('❌ Get recent trades error:', err.message);
     res.status(500).json({ success: false, error: 'Server error' });

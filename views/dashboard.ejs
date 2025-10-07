@@ -10,9 +10,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <style>
-      :root {
-        --primary-color: #0d6efd;
-      }
+  :root {
+    --primary-color: #0d6efd;
+  }
 </style>
 <body>
   <!-- Sidebar: เมนูด้านข้าง -->
@@ -90,12 +90,12 @@
       <div class="user-info">
         <div class="user-details">
           <h4>Dashboard</h4>
-            <small>
-              Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
-              EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
-              Role: <span class="badge badge-<%= user.role === 'admin' ? 'danger' : user.role === 'trader' ? 'success' : 'secondary' %>"><%= user.role || 'Guest' %></span> | @<%= user.username || 'Guest' %> <br /> | 
-              <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
-            </small>
+          <small>
+            Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
+            EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
+            Role: <span class="badge badge-<%= user.role === 'admin' ? 'danger' : user.role === 'trader' ? 'success' : 'secondary' %>"><%= user.role || 'Guest' %></span> | @<%= user.username || 'Guest' %> <br /> | 
+            <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
+          </small>
         </div>
       </div>
       <img src="<%= user.profileImage + '?v=' + Date.now() %>" class="avatar" alt="Profile" />
@@ -252,7 +252,38 @@
       <% } %>
     </div>
   </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const tournamentEnd = new Date("<%= tournament ? tournament.end : '' %>");
+      const timeLeftElement = document.getElementById("timeLeft");
 
+      function updateTimeLeft() {
+        if (!tournamentEnd || isNaN(tournamentEnd)) {
+          timeLeftElement.textContent = "No tournament data";
+          return;
+        }
+
+        const now = new Date();
+        const diff = tournamentEnd - now;
+
+        if (diff <= 0) {
+          timeLeftElement.textContent = "Tournament Ended";
+          return;
+        }
+
+        const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+        timeLeftElement.textContent =
+          `${d > 0 ? d + "d " : ""}${h > 0 ? h + "h " : ""}${m > 0 ? m + "m " : ""}${s}s`;
+      }
+
+      updateTimeLeft();
+      setInterval(updateTimeLeft, 1000);
+    });
+  </script>
   <script src="/js/dashboard.js"></script>
 </body>
 </html>

@@ -2,18 +2,19 @@ const User = require('../models/User');
 
 // ระดับและ EXP ที่ต้องการ
 const LEVEL_REQUIREMENTS = {
-  1: { name: 'Beginner', exp: 0},
-  2: { name: 'Apprentice', exp: 100},
-  3: { name: 'Trader', exp: 300},
-  4: { name: 'Pro Trader', exp: 800},
-  5: { name: 'Elite', exp: 1500},
-  6: { name: 'God', exp: 99999999 }
+  1: { name: 'Beginner', exp: 0 },
+  2: { name: 'Apprentice', exp: 150 },
+  3: { name: 'Trader', exp: 450 },
+  4: { name: 'Pro Trader', exp: 1200 },
+  5: { name: 'Elite', exp: 3000 },
+  6: { name: 'Legend', exp: 7000 },
+  7: { name: 'God', exp: 15000 }
 };
 
-// คำนวณเลเวลจาก EXP
+// ✅ คำนวณเลเวลจาก EXP
 function getLevelFromExp(exp) {
   let level = 1;
-  for (let i = 6; i >= 1; i--) {
+  for (let i = 7; i >= 1; i--) {
     if (exp >= LEVEL_REQUIREMENTS[i].exp) {
       level = i;
       break;
@@ -22,17 +23,17 @@ function getLevelFromExp(exp) {
   return level;
 }
 
-// คำนวณ EXP ที่ต้องการสำหรับเลเวลถัดไป
+// ✅ คำนวณ EXP ที่ต้องการสำหรับเลเวลถัดไป
 function getExpForNextLevel(currentLevel) {
   const nextLevel = currentLevel + 1;
-  if (nextLevel > 6) return null; // ถึงเลเวลสูงสุดแล้ว
+  if (nextLevel > 7) return null; // ✅ ถึงเลเวลสูงสุดแล้ว (God)
   
   const currentExp = LEVEL_REQUIREMENTS[currentLevel].exp;
   const nextExp = LEVEL_REQUIREMENTS[nextLevel].exp;
   return nextExp - currentExp;
 }
 
-// เพิ่ม EXP ให้ผู้ใช้
+// ✅ เพิ่ม EXP ให้ผู้ใช้
 async function addExp(userId, expToAdd, reason = '') {
   try {
     const user = await User.findById(userId);
@@ -52,9 +53,9 @@ async function addExp(userId, expToAdd, reason = '') {
       user.level = newLevel;
       levelUp = true;
     }
-    
+
     await user.save();
-    
+
     return {
       success: true,
       oldLevel,
@@ -70,22 +71,21 @@ async function addExp(userId, expToAdd, reason = '') {
   }
 }
 
-// ตรวจสอบโบนัสการเทรด 3 ครั้งต่อวัน
+// ✅ ตรวจสอบโบนัสเทรด 3 ครั้งต่อวัน
 async function checkDailyTradeBonus(userId) {
   try {
     const TradeLog = require('../models/tradeLog');
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    
+
     const tradeCount = await TradeLog.countDocuments({
       userId,
       createdAt: { $gte: today, $lt: tomorrow }
     });
-    
-    // ถ้าเทรดครบ 3 ครั้งในวันนี้ ให้โบนัส
+
     if (tradeCount === 3) {
       const result = await addExp(userId, 30, 'Daily Trade Bonus (3 trades)');
       if (result.success && result.levelUp) {
@@ -93,7 +93,7 @@ async function checkDailyTradeBonus(userId) {
       }
       return result;
     }
-    
+
     return { success: true, tradeCount, bonusGiven: false };
   } catch (error) {
     console.error('❌ Error checking daily trade bonus:', error);
@@ -101,13 +101,11 @@ async function checkDailyTradeBonus(userId) {
   }
 }
 
-// ตรวจสอบโบนัสการเทรดตามกลยุทธ์ (placeholder)
+// ✅ ตรวจสอบโบนัสกลยุทธ์
 async function checkStrategyBonus(userId, strategyType) {
   try {
-    // TODO: ตรวจสอบว่าผู้ใช้เทรดตามกลยุทธ์ที่ระบบแนะนำหรือไม่
-    // สำหรับตอนนี้จะให้โบนัสแบบสุ่ม 10% ของการเทรด
     const shouldGiveBonus = Math.random() < 0.1; // 10% chance
-    
+
     if (shouldGiveBonus) {
       const result = await addExp(userId, 50, `Strategy Bonus (${strategyType})`);
       if (result.success && result.levelUp) {
@@ -115,7 +113,7 @@ async function checkStrategyBonus(userId, strategyType) {
       }
       return result;
     }
-    
+
     return { success: true, bonusGiven: false };
   } catch (error) {
     console.error('❌ Error checking strategy bonus:', error);
@@ -123,17 +121,21 @@ async function checkStrategyBonus(userId, strategyType) {
   }
 }
 
-// ดึงข้อมูลเลเวลของผู้ใช้
+// ✅ ดึงข้อมูลเลเวลของผู้ใช้
 async function getUserLevelInfo(userId) {
   try {
     const user = await User.findById(userId);
-    if (!user) {
-      return { success: false, error: 'User not found' };
-    }
-    const level = user.level > 6 ? 6 : user.level;
+    if (!user) return { success: false, error: 'User not found' };
+
+    // ✅ ปรับให้รองรับถึงเลเวล 7 (God)
+    const level = user.level > 7 ? 7 : user.level;
     const currentLevelInfo = LEVEL_REQUIREMENTS[level];
     const nextLevelExp = getExpForNextLevel(level);
-    const progressToNextLevel = nextLevelExp ? ((user.exp - currentLevelInfo.exp) / nextLevelExp) * 100 : 100;
+
+    const progressToNextLevel = nextLevelExp
+      ? ((user.exp - currentLevelInfo.exp) / nextLevelExp) * 100
+      : 100;
+
     return {
       success: true,
       level: user.level,
@@ -141,7 +143,7 @@ async function getUserLevelInfo(userId) {
       levelInfo: currentLevelInfo,
       nextLevelExp,
       progressToNextLevel: Math.min(progressToNextLevel, 100),
-      isMaxLevel: level >= 6
+      isMaxLevel: level >= 7 // ✅ เปลี่ยนจาก 6 → 7
     };
   } catch (error) {
     console.error('❌ Error getting user level info:', error);
