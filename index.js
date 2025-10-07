@@ -1,4 +1,5 @@
 // Import และตั้งค่าต่าง ๆ ของ Express, MongoDB, Socket.io
+process.env.TZ = 'Asia/Bangkok';
 const express = require('express');
 const app = express();
 const ejs = require('ejs');
