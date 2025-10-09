@@ -193,35 +193,34 @@
         color: var(--primary-color);
       }
     </style>
-    <script>
-async function checkDuplicate(field, value) {
-  if (!value.trim()) return;
-  const res = await fetch('/user/check', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ [field]: value })
-  });
-  const data = await res.json();
-  if (data.exists) {
+    <script src="/js/register.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+  const validationErrors = <%- JSON.stringify(validationErrors || []) %>;
+  const successMsg = "<%= typeof messages !== 'undefined' && messages.success && messages.success.length > 0 ? messages.success[0] : '' %>";
+
+  console.log("validationErrors:", validationErrors);
+  console.log("successMsg:", successMsg);
+
+  if (validationErrors.length > 0) {
     Swal.fire({
       icon: 'warning',
       title: 'ข้อมูลซ้ำ!',
-      text: data.field === 'username' ? 'Username นี้มีอยู่แล้ว' : 'Email นี้ถูกใช้แล้ว',
+      text: validationErrors[0],
+      confirmButtonText: 'ตกลง'
     });
-    document.getElementById(field).value = '';
-    document.getElementById(field).focus();
+  } else if (successMsg) {
+    Swal.fire({
+      icon: 'success',
+      title: 'สมัครสมาชิกสำเร็จ!',
+      text: successMsg,
+      timer: 2000,
+      showConfirmButton: false
+    });
   }
-}
-
-// ✅ ตรวจเมื่อผู้ใช้พิมพ์จบ (blur ออกจากช่อง)
-document.getElementById('username').addEventListener('blur', (e) => {
-  checkDuplicate('username', e.target.value);
-});
-document.getElementById('email').addEventListener('blur', (e) => {
-  checkDuplicate('email', e.target.value);
-});
+  });
 </script>
-    <script src="/js/register.js"></script>
   </head>
   <body>
 
