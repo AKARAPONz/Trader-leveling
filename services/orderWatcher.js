@@ -4,12 +4,6 @@ const OpenPosition = require('../models/openPosition');
 const TradeLog = require('../models/tradeLog');
 const TournamentUser = require('../models/tournamentUser');
 
-const BINANCE_API = 'https://api.binance.com/api/v3/ticker/price?symbol=';
-
-// ✅ สร้าง instance ของ axios ที่มี retry delay
-const api = axios.create({ baseURL: BINANCE_API });
-
-// หน่วงระหว่าง request แต่ละ symbol เพื่อไม่ให้โดน block
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function checkPositions() {
@@ -19,42 +13,59 @@ async function checkPositions() {
 
     console.log(`🔍 Checking ${openPositions.length} open positions...`);
 
+    // ✅ ดึงราคาทั้งหมดจาก Binance ทีเดียว (เร็วมาก)
+    const { data: allPrices } = await axios.get('https://api.binance.com/api/v3/ticker/price');
+
     for (const pos of openPositions) {
       try {
-        // ✅ ดึงราคาปัจจุบันจาก Binance (retry ถ้าโดน rate limit)
-        let price = null;
-        for (let attempt = 1; attempt <= 3; attempt++) {
-          try {
-            const { data } = await api.get(pos.symbol);
-            price = parseFloat(data.price);
-            break; // ✅ สำเร็จออกจาก loop retry
-          } catch (err) {
-            if (err.response && err.response.status === 429) {
-              console.warn(`⚠️ Rate limit hit (attempt ${attempt}) → waiting 5s...`);
-              await delay(5000); // รอ 5 วิแล้วลองใหม่
-            } else {
-              throw err;
-            }
-          }
+        // ✅ ข้ามออเดอร์ที่เพิ่งเปิดไม่เกิน 10 วินาที
+        const secondsSinceOpen = (Date.now() - new Date(pos.createdAt).getTime()) / 1000;
+        if (secondsSinceOpen < 10) {
+          console.log(`⏱ Skip ${pos.symbol} (just opened ${secondsSinceOpen.toFixed(1)}s ago)`);
+          continue;
         }
 
-        if (!price) {
-          console.warn(`⚠️ Failed to fetch price for ${pos.symbol}`);
+        // ✅ หา symbol จากราคาที่ดึงมาทั้งหมด
+        const found = allPrices.find(p => p.symbol === pos.symbol.toUpperCase());
+        if (!found) {
+          console.warn(`⚠️ Symbol not found on Binance: ${pos.symbol}`);
+          continue;
+        }
+
+        const price = parseFloat(found.price);
+        if (!price || isNaN(price)) {
+          console.warn(`⚠️ Invalid price for ${pos.symbol}`);
           continue;
         }
 
         let shouldClose = false;
+        let reason = '';
 
+        // ✅ ตรวจสอบ TP/SL
         if (pos.action === 'buy') {
-          if (pos.stopLoss && price <= pos.stopLoss) shouldClose = true;
-          if (pos.takeProfit && price >= pos.takeProfit) shouldClose = true;
+          if (pos.stopLoss && price <= Number(pos.stopLoss)) {
+            shouldClose = true;
+            reason = 'StopLoss';
+          }
+          if (pos.takeProfit && price >= Number(pos.takeProfit)) {
+            shouldClose = true;
+            reason = 'TakeProfit';
+          }
         } else if (pos.action === 'sell') {
-          if (pos.stopLoss && price >= pos.stopLoss) shouldClose = true;
-          if (pos.takeProfit && price <= pos.takeProfit) shouldClose = true;
+          if (pos.stopLoss && price >= Number(pos.stopLoss)) {
+            shouldClose = true;
+            reason = 'StopLoss';
+          }
+          if (pos.takeProfit && price <= Number(pos.takeProfit)) {
+            shouldClose = true;
+            reason = 'TakeProfit';
+          }
         }
 
         if (shouldClose) {
-          console.log(`📉 Auto-close triggered for ${pos.symbol} at ${price}`);
+          console.log(
+            `📉 Auto-close triggered for ${pos.symbol} at ${price.toFixed(2)} | Reason: ${reason}`
+          );
 
           let score = 0;
           if (pos.action === 'buy') {
@@ -91,10 +102,14 @@ async function checkPositions() {
 
           // ✅ ลบ position ที่ปิดแล้ว
           await OpenPosition.findByIdAndDelete(pos._id);
+
+          // ✅ log สีสวย
+          const color = reason === 'TakeProfit' ? '\x1b[32m' : '\x1b[31m';
+          console.log(`${color}✔ Closed ${pos.symbol} | ${reason} | PnL: ${pnl.toFixed(2)}\x1b[0m`);
         }
 
-        // ✅ เว้นช่วง 1 วิ ต่อ symbol เพื่อไม่ให้โดน rate limit
-        await delay(1000);
+        // ✅ เว้นช่วงเล็กน้อยเพื่อไม่ให้ console ล้น
+        await delay(100);
       } catch (err) {
         console.error(`❌ Error processing ${pos.symbol}:`, err.message);
       }
@@ -104,7 +119,7 @@ async function checkPositions() {
   }
 }
 
-// ✅ รันทุก 10 วินาที (ปลอดภัยกว่า 5 วินาที)
-setInterval(checkPositions, 10000);
+// ✅ ตรวจทุก 5 วิ (แต่ละรอบเร็วกว่าเดิมมาก)
+setInterval(checkPositions, 5000);
 
 module.exports = { checkPositions };

@@ -84,7 +84,7 @@
       <div class="card mb-4">
         <div class="card-header">
           <h5><i class="bi bi-trophy"></i> Tournament: <%= tournament.name %></h5>
-          <small class="text-muted">Balance: $<%= userBalance.toFixed(2) %></small>
+          <small class="text-muted">Balance: $<%= Number(userBalance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></small>
         </div>
         <div class="card-body d-flex justify-content-between">
           <div><strong>Status:</strong> 
@@ -380,37 +380,98 @@ async function loadRecentTrades() {
 }
 
   // ====== Open Positions ======
-  async function loadOpenPositions() {
-    try {
-      const tournamentId = '<%= tournament ? tournament._id : "" %>';
-      if (!tournamentId) return;
-      const res = await fetch(`/api/trade/positions?tournamentId=${tournamentId}`);
-      const data = await res.json();
-      const box = document.getElementById('openPositions');
-      if (data.success && data.positions && data.positions.length) {
-        box.innerHTML = data.positions.map(position => {
-          const entryDisplay = (position.entryPrice ?? 'Market');
-          return `
-            <div class="position-item">
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="badge badge-${position.action === 'buy' ? 'success' : 'danger'}">${(position.action||'').toUpperCase()}</span>
-                <small>${new Date(position.createdAt).toLocaleTimeString()}</small>
-              </div>
-              <div>Lot: ${position.lot} | Entry: ${entryDisplay}</div>
-              <div class="d-flex gap-2 mt-2">
-                <button class="btn btn-theme-edit btn-sm" onclick="showEditModal('${position._id}', ${position.lot}, ${position.stopLoss || 'null'}, ${position.takeProfit || 'null'})">Edit</button>
-                <button class="btn btn-theme-close btn-sm" onclick="showCloseModal('${position._id}', ${position.lot})">Close</button>
-              </div>
+async function loadOpenPositions() {
+  try {
+    const tournamentId = '<%= tournament ? tournament._id : "" %>';
+    if (!tournamentId) return;
+
+    const res = await fetch(`/api/trade/positions?tournamentId=${tournamentId}`);
+    const data = await res.json();
+    const box = document.getElementById('openPositions');
+
+    if (data.success && data.positions && data.positions.length) {
+      // ✅ ดึงราคาปัจจุบันทั้งหมดก่อน (batch)
+      const priceRes = await fetch('https://api.binance.com/api/v3/ticker/price');
+      const allPrices = await priceRes.json();
+
+      box.innerHTML = data.positions.map(position => {
+        const entry = Number(position.entryPrice);
+        const found = allPrices.find(p => p.symbol === position.symbol.toUpperCase());
+        const currentPrice = found ? Number(found.price) : entry;
+        
+        // ✅ คำนวณกำไร/ขาดทุนตอนนั้น
+        let pnl = 0;
+        if (position.action === 'buy') {
+          pnl = (currentPrice - entry) * position.lot;
+        } else if (position.action === 'sell') {
+          pnl = (entry - currentPrice) * position.lot;
+        }
+
+        const pnlColor = pnl >= 0 ? 'text-success' : 'text-danger';
+        const pnlLabel = pnl >= 0 ? 'Profit' : 'Loss';
+
+        return `
+          <div class="position-item">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="badge badge-${position.action === 'buy' ? 'success' : 'danger'}">${(position.action||'').toUpperCase()}</span>
+              <small>${new Date(position.createdAt).toLocaleTimeString()}</small>
             </div>
-          `;
-        }).join('');
-      } else {
-        box.innerHTML = '<p class="text-muted text-center">No open positions</p>';
-      }
-    } catch {
-      document.getElementById('openPositions').innerHTML = '<p class="text-muted text-center">Error loading positions</p>';
+            <div>
+              Lot: ${position.lot} | 
+              Entry: ${entry.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} |
+              <span id="pnl-${position._id}" class="${pnlColor}">${pnlLabel}: ${pnl.toFixed(2)}</span>
+              ${position.stopLoss ? `| SL: ${Number(position.stopLoss).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : ''} 
+              ${position.takeProfit ? `| TP: ${Number(position.takeProfit).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : ''}
+            </div>
+
+            <div class="d-flex gap-2 mt-2">
+              <button class="btn btn-theme-edit btn-sm" onclick="showEditModal('${position._id}', ${position.lot}, ${position.stopLoss || 'null'}, ${position.takeProfit || 'null'})">Edit</button>
+              <button class="btn btn-theme-close btn-sm" onclick="showCloseModal('${position._id}', ${position.lot})">Close</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } else {
+      box.innerHTML = '<p class="text-muted text-center">No open positions</p>';
     }
+  } catch (err) {
+    console.error('Open positions error:', err);
+    document.getElementById('openPositions').innerHTML = '<p class="text-danger text-center">Error loading positions</p>';
   }
+}
+
+// ====== Update Real-Time PnL ======
+async function updateRealtimePnL() {
+  try {
+    const priceRes = await fetch('https://api.binance.com/api/v3/ticker/price');
+    const allPrices = await priceRes.json();
+
+    // ดึงข้อมูล position ปัจจุบันจาก DOM (ที่ render ล่าสุด)
+    const tournamentId = '<%= tournament ? tournament._id : "" %>';
+    if (!tournamentId) return;
+    const res = await fetch(`/api/trade/positions?tournamentId=${tournamentId}`);
+    const data = await res.json();
+    if (!data.success || !data.positions) return;
+
+    data.positions.forEach(pos => {
+      const entry = Number(pos.entryPrice);
+      const found = allPrices.find(p => p.symbol === pos.symbol.toUpperCase());
+      const current = found ? Number(found.price) : entry;
+      let pnl = 0;
+
+      if (pos.action === 'buy') pnl = (current - entry) * pos.lot;
+      else if (pos.action === 'sell') pnl = (entry - current) * pos.lot;
+
+      const pnlSpan = document.getElementById(`pnl-${pos._id}`);
+      if (pnlSpan) {
+        pnlSpan.textContent = `${pnl >= 0 ? 'Profit' : 'Loss'}: ${pnl.toFixed(2)}`;
+        pnlSpan.className = pnl >= 0 ? 'text-success' : 'text-danger';
+      }
+    });
+  } catch (err) {
+    console.warn('⚠️ Realtime PnL update failed:', err.message);
+  }
+}
 
   // ====== Tournament Time ======
   function updateTimeLeft() {
@@ -478,11 +539,13 @@ async function loadRecentTrades() {
             body: JSON.stringify(body)
           });
           const data = await res.json();
-          if (res.ok && data.success) {
-            alert(`✅ Order placed!\nAction: ${data.trade.action}\nLot: ${data.trade.lot}`);
-            window.location.reload();
+          if (res.ok && data.success && data.position) {
+            alert(`✅ Order placed!\nAction: ${data.position.action}\nLot: ${data.position.lot}`);
+            // โหลดข้อมูลใหม่โดยไม่ต้องรีหน้า
+            loadOpenPositions();
+            loadRecentTrades();
           } else {
-            alert('Error: ' + (data.error || 'Unknown error'));
+            alert('❌ Error placing order: ' + (data.error || 'Unknown error'));
           }
         } catch (err) {
           alert('Error placing order: ' + err.message);
@@ -574,6 +637,8 @@ async function loadRecentTrades() {
       alert('Error closing position: ' + err.message);
     }
   }
+  // ✅ เริ่มอัปเดตกำไร/ขาดทุนเรียลไทม์ทุก 1 วินาที
+  setInterval(updateRealtimePnL,1000);
 </script>
 </body>
 </html>
