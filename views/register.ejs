@@ -193,6 +193,50 @@
         color: var(--primary-color);
       }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.querySelector('form').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const formData = new FormData(this);
+  const body = new URLSearchParams(formData);
+
+  try {
+    const res = await fetch('/user/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      // ✅ แสดง alert แจ้งว่าสำเร็จ
+      Swal.fire({
+        icon: 'success',
+        title: 'สมัครสมาชิกสำเร็จ!',
+        text: 'กำลังนำคุณไปยังหน้าเข้าสู่ระบบ...',
+        showConfirmButton: false,
+        timer: 2000
+      });
+      setTimeout(() => window.location.href = '/login', 2000);
+    } else {
+      // ❌ ถ้าสมัครไม่สำเร็จ
+      Swal.fire({
+        icon: 'error',
+        title: 'สมัครไม่สำเร็จ',
+        text: data.error || 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์'
+      });
+    }
+  } catch (err) {
+    Swal.fire({
+      icon: 'error',
+      title: 'เกิดข้อผิดพลาด',
+      text: err.message
+    });
+  }
+});
+</script>
     <script src="/js/register.js"></script>
   </head>
   <body>
@@ -226,7 +270,7 @@
           </div>
           <div class="form-group">
             <label for="age" class="form-label">Age</label>
-            <input type="number" name="age" value="<%= age %>" class="form-control" id="age" placeholder="Age" min="1" required>
+            <input type="number" name="age" value="<%= age %>" class="form-control" id="age" placeholder="Age"required>
           </div>
           <div class="form-group">
             <label for="country" class="form-label">Country / Region</label>
@@ -431,11 +475,9 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="role" class="form-label">Role</label>
-            <select class="form-control" name="role" id="role" required>
-              <option value="">Choose role</option>
-              <option value="trader" <%= role === 'trader' ? 'selected' : '' %>>Trader</option>
-            </select>
+            <label class="form-label">Role</label>
+            <input type="text" class="form-control" value="Trader" readonly style>
+            <input type="hidden" name="role" value="trader">
           </div>
           <button class="btn-register" type="submit">
             <i class="bi bi-person-plus"></i>
