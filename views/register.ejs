@@ -193,48 +193,32 @@
         color: var(--primary-color);
       }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-document.querySelector('form').addEventListener('submit', async function (e) {
-  e.preventDefault();
-
-  const formData = new FormData(this);
-  const body = new URLSearchParams(formData);
-
-  try {
-    const res = await fetch('/user/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body
-    });
-
-    const data = await res.json();
-
-    if (res.ok && data.success) {
-      // ✅ แสดง alert แจ้งว่าสำเร็จ
-      Swal.fire({
-        icon: 'success',
-        title: 'สมัครสมาชิกสำเร็จ!',
-        text: 'กำลังนำคุณไปยังหน้าเข้าสู่ระบบ...',
-        showConfirmButton: false,
-        timer: 2000
-      });
-      setTimeout(() => window.location.href = '/login', 2000);
-    } else {
-      // ❌ ถ้าสมัครไม่สำเร็จ
-      Swal.fire({
-        icon: 'error',
-        title: 'สมัครไม่สำเร็จ',
-        text: data.error || 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์'
-      });
-    }
-  } catch (err) {
+    <script>
+async function checkDuplicate(field, value) {
+  if (!value.trim()) return;
+  const res = await fetch('/user/check', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ [field]: value })
+  });
+  const data = await res.json();
+  if (data.exists) {
     Swal.fire({
-      icon: 'error',
-      title: 'เกิดข้อผิดพลาด',
-      text: err.message
+      icon: 'warning',
+      title: 'ข้อมูลซ้ำ!',
+      text: data.field === 'username' ? 'Username นี้มีอยู่แล้ว' : 'Email นี้ถูกใช้แล้ว',
     });
+    document.getElementById(field).value = '';
+    document.getElementById(field).focus();
   }
+}
+
+// ✅ ตรวจเมื่อผู้ใช้พิมพ์จบ (blur ออกจากช่อง)
+document.getElementById('username').addEventListener('blur', (e) => {
+  checkDuplicate('username', e.target.value);
+});
+document.getElementById('email').addEventListener('blur', (e) => {
+  checkDuplicate('email', e.target.value);
 });
 </script>
     <script src="/js/register.js"></script>
@@ -260,6 +244,10 @@ document.querySelector('form').addEventListener('submit', async function (e) {
               </div>
             <% } %>
           <% } %>
+          <div class="form-group">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" name="email" value="<%= typeof email !== 'undefined' ? email : '' %>" class="form-control" id="email" placeholder="your@email.com" required>
+          </div>
           <div class="form-group">
             <label for="username" class="form-label">Username</label>
             <input type="text" name="username" value="<%= typeof username !== 'undefined' ? username : '' %>" class="form-control" id="username" placeholder="your username" required>
@@ -476,7 +464,7 @@ document.querySelector('form').addEventListener('submit', async function (e) {
           </div>
           <div class="form-group">
             <label class="form-label">Role</label>
-            <input type="text" class="form-control" value="Trader" readonly style>
+            <input type="text" class="form-control" value="Trader" readonly>
             <input type="hidden" name="role" value="trader">
           </div>
           <button class="btn-register" type="submit">

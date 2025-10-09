@@ -1,6 +1,7 @@
 const User = require('../models/User');
 
 module.exports = async (req, res) => {
+  let email = '';
   let username = '';
   let password = '';
   let age = '';
@@ -11,6 +12,7 @@ module.exports = async (req, res) => {
   let data = req.flash('data')[0];
 
   if (typeof data !== 'undefined') {
+    email = data.email;
     username = data.username;
     password = data.password;
     age = data.age;
@@ -20,10 +22,11 @@ module.exports = async (req, res) => {
 
   if (req.method === 'POST') {
     console.log('Register request received:', req.body);
-    const { username, password, age, country, role: selectedRole } = req.body;
+    const { email, username, password, age, country, role: selectedRole } = req.body;
 
     try {
       const user = new User({
+        email,
         username,
         password,
         age,
@@ -39,7 +42,7 @@ module.exports = async (req, res) => {
     } catch (error) {
       console.error('Registration error:', error);
       req.flash('validationError', 'Registration failed. Please check your input.');
-      req.flash('data', { username, password, age, country, role: selectedRole });
+      req.flash('data', { email, username, password, age, country, role: selectedRole });
       return res.redirect('/register');
     }
   }
@@ -47,6 +50,7 @@ module.exports = async (req, res) => {
   // Render registration form
   res.render('register', {
     error: req.flash('validationError'),
+    email,
     username,
     password,
     age,

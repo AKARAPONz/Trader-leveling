@@ -2,34 +2,37 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 
 module.exports = async (req, res) => {
-  const { username, password } = req.body;
+  const { identifier, password } = req.body; // ✅ ใช้ identifier (อาจเป็น email หรือ username)
 
   try {
-    const user = await User.findOne({ username });
+    // ✅ หาผู้ใช้จาก username หรือ email
+    const user = await User.findOne({
+      $or: [{ username: identifier }, { email: identifier }]
+    });
 
     if (!user) {
-      req.flash('error', 'Username or password is incorrect');
+      req.flash('error', 'ไม่พบผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
       return res.render('login', {
         messages: req.flash(),
-        username
+        username: identifier
       });
     }
 
+    // ✅ ตรวจรหัสผ่าน
     const match = await bcrypt.compare(password, user.password);
-
     if (!match) {
-      req.flash('error', 'Username or password is incorrect');
+      req.flash('error', 'ไม่พบผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
       return res.render('login', {
         messages: req.flash(),
-        username
+        username: identifier
       });
     }
 
-    // บันทึกข้อมูลผู้ใช้ลงใน session รวมทั้ง role และ level
+    // ✅ บันทึกข้อมูลผู้ใช้ใน session
     req.session.userId = user._id;
     req.session.user = {
-      name: user.name || '', // fallback ถ้าไม่มี name
       username: user.username,
+      email: user.email,
       profileImage: user.profileImage || '/uploads/default.jpg',
       _id: user._id,
       age: user.age || null,
@@ -39,12 +42,12 @@ module.exports = async (req, res) => {
       exp: user.exp || 0
     };
 
-    res.redirect('/');
+    console.log(`✅ User logged in: ${user.username} (${user.email})`);
+    return res.redirect('/'); // หรือเปลี่ยนเป็น '/dashboard'
+
   } catch (err) {
-    console.error('Login error:', err);
-    req.flash('error', 'Something went wrong. Please try again.');
-    res.render('login', {
-      messages: req.flash()
-    });
+    console.error('❌ Login error:', err);
+    req.flash('error', 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+    res.render('login', { messages: req.flash() });
   }
 };

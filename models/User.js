@@ -3,9 +3,15 @@ const Schema = mongoose.Schema;
 const bcrypt = require('bcryptjs');
 
 const UserSchema = new Schema({
-    username: {
+  email: {
     type: String,
-    required: [true, 'Please provide username']
+    required: [true, 'Please provide email'],
+    unique: true // ✅ ห้าม email ซ้ำ
+  },
+  username: {
+    type: String,
+    required: [true, 'Please provide username'],
+    unique: true // ✅ ห้าม username ซ้ำ
   },
   password: {
     type: String,
@@ -25,28 +31,22 @@ const UserSchema = new Schema({
   },
   level: {
     type: Number,
-    default: 1 // เริ่มต้นที่เลเวล 1
+    default: 1
   },
   exp: {
     type: Number,
-    default: 0 // เริ่มต้นที่ 0 EXP
+    default: 0
   },
   role: {
     type: String,
     enum: ['admin', 'trader', 'guest'],
-    default: 'guest'
-  },
-  username: {
-    type: String,
-    required: [true, 'Please provide username'],
-    unique: true
+    default: 'trader' // ✅ สมัครใหม่เป็น Trader อัตโนมัติ
   }
 });
 
-// เข้ารหัสรหัสผ่านก่อนบันทึก
+// ✅ เข้ารหัสรหัสผ่านก่อนบันทึก
 UserSchema.pre('save', function (next) {
   const user = this;
-
   if (!user.isModified('password')) return next();
 
   bcrypt.hash(user.password, 10)
@@ -54,11 +54,7 @@ UserSchema.pre('save', function (next) {
       user.password = hash;
       next();
     })
-    .catch(error => {
-      console.error('Error hashing password:', error);
-      next(error);
-    });
+    .catch(error => next(error));
 });
 
-const User = mongoose.model('User', UserSchema);
-module.exports = User;
+module.exports = mongoose.model('User', UserSchema);
