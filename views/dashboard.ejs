@@ -144,13 +144,14 @@
                 <div class="row">
                   <div class="col-md-6">
                     <div class="text-center p-3 border rounded">
+                      <h6 class="mb-2">กำไรจากการเทรด</h6>
                       <div class="h4 text-success mb-1">+<span id="profitAmount"><%= typeof totalProfit !== 'undefined' ? Number(totalProfit).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00' %></span></div>
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="text-center p-3 border rounded">
+                      <h6 class="mb-2">ขาดทุนจากการเทรด</h6>
                       <div class="h4 text-danger mb-1">-<span id="lossAmount"><%= typeof totalLoss !== 'undefined' ? Number(totalLoss).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00' %></span></div>
-                      <small class="text-muted">ขาดทุนจากการเทรด</small>
                     </div>
                   </div>
                 </div>
@@ -159,7 +160,6 @@
                 <div class="border rounded p-3">
                   <h6 class="mb-2">คะแนนรวมของคุณ</h6>
                   <div class="h3 text-primary mb-1"><span id="totalTradingPoints"><%= totalScore ? Number(totalScore).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00' %></span></div>
-                  <small class="text-muted">คะแนนจากการเทรด (คิดจากกำไร-ขาดทุน)</small>
                 </div>
               </div>
             </div>

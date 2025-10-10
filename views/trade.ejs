@@ -246,6 +246,29 @@
     </div>
   </div>
 <script>
+// ====== ดึง Balance ปัจจุบันจาก backend แล้วอัปเดต DOM ======
+async function refreshBalance() {
+  try {
+    const tournamentId = document.body.dataset.tournamentId;
+    if (!tournamentId) return;
+
+    const res = await fetch(`/api/user/balance?tournamentId=${tournamentId}`);
+    const data = await res.json();
+
+    if (data.success && typeof data.balance !== 'undefined') {
+      const balanceText = document.querySelector('.card-header small.text-muted');
+      if (balanceText) {
+        balanceText.textContent = `Balance: $${Number(data.balance).toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })}`;
+      }
+    }
+  } catch (err) {
+    console.warn('⚠️ Balance refresh failed:', err.message);
+  }
+}
+
   // ====== ตัวแปรหลัก ======
   let currentAction = 'buy';
   let currentSymbol = document.getElementById('symbolInput').value || 'BTCUSDT';
@@ -500,11 +523,14 @@ async function updateRealtimePnL() {
     loadRecentTrades();
     loadOpenPositions();
     updateTimeLeft();
+    // อัปเดตข้อมูล (price, trade, position) ทุก 5 วิ
     setInterval(() => {
       loadRecentTrades();
       loadOpenPositions();
-      updateTimeLeft();
-    }, 30000);
+    }, 5000);
+
+    // อัปเดตเวลา (นับถอยหลัง) ทุก 1 วิ
+    setInterval(updateTimeLeft, 1000);
 
     // ====== Submit Trade ======
     const tradeForm = document.getElementById('tradeForm');
@@ -544,6 +570,7 @@ async function updateRealtimePnL() {
             // โหลดข้อมูลใหม่โดยไม่ต้องรีหน้า
             loadOpenPositions();
             loadRecentTrades();
+            refreshBalance();
           } else {
             alert('❌ Error placing order: ' + (data.error || 'Unknown error'));
           }
@@ -630,6 +657,7 @@ async function updateRealtimePnL() {
         closeCloseModal();
         loadOpenPositions();
         loadRecentTrades();
+        refreshBalance();
       } else {
         alert('Error: ' + (data.error || 'Close failed'));
       }

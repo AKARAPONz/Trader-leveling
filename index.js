@@ -10,6 +10,7 @@ const path = require('path');
 const multer = require('multer');
 const http = require('http').createServer(app);           // ใช้ http server
 const io = require('socket.io')(http);                    // ใช้ socket.io
+const TournamentUser = require('./models/TournamentUser');
 const OpenPosition = require('./models/OpenPosition');
 const TradeLog = require('./models/TradeLog');
 const axios = require('axios');
@@ -121,6 +122,29 @@ app.use('/api/close-position', require('./routes/api/close-position'));
 app.use('/api/user-level', require('./routes/api/user-level'));
 app.use('/api/tournament-join', require('./routes/api/tournament-join'));
 
+// ✅ API ดึง balance ของผู้ใช้ใน tournament
+
+app.get('/api/user/balance', async (req, res) => {
+  try {
+    const { tournamentId } = req.query;
+    const userId = req.session.userId;
+
+    if (!userId || !tournamentId) {
+      return res.json({ success: false, error: 'Missing user or tournament ID' });
+    }
+
+    const tournamentUser = await TournamentUser.findOne({ userId, tournamentId });
+    if (!tournamentUser) {
+      return res.json({ success: false, error: 'Tournament user not found' });
+    }
+
+    return res.json({ success: true, balance: tournamentUser.balance });
+  } catch (err) {
+    console.error('Balance fetch error:', err);
+    res.json({ success: false, error: 'Internal server error' });
+  }
+});
+
 // ฟังก์ชันดึงราคาตลาดจาก backend (ใช้ axios)
 async function getMarketPrice(symbol) {
   try {
@@ -150,7 +174,5 @@ async function getMarketPrice(symbol) {
 require('./services/orderWatcher');
 
 // Start server
-http.listen(4000, () => {
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`✅ App running on port ${PORT}`));
-});
