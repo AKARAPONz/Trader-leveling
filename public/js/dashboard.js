@@ -89,7 +89,8 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Load user level info
   loadUserLevelInfo();
-  
+
+  setInterval(loadUserLevelInfo, 5000); // อัปเดต exp ทุก 5 วิ
   // Load trading score
   loadTradingScore();
 }); 

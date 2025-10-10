@@ -10,6 +10,8 @@ const path = require('path');
 const multer = require('multer');
 const http = require('http').createServer(app);           // ใช้ http server
 const io = require('socket.io')(http);                    // ใช้ socket.io
+const awardExpForTournament = require('./controllers/awardExpController');
+const Tournament = require('./models/Tournament');
 const TournamentUser = require('./models/TournamentUser');
 const OpenPosition = require('./models/OpenPosition');
 const TradeLog = require('./models/TradeLog');
@@ -145,6 +147,43 @@ app.get('/api/user/balance', async (req, res) => {
   }
 });
 
+// ✅ แจ้งข้อมูลการได้รับ EXP หลังจบทัวร์นาเมนต์
+app.get('/api/tournament-exp-status', async (req, res) => {
+  try {
+    const { tournamentId } = req.query;
+    const userId = req.session.userId;
+
+    if (!userId || !tournamentId)
+      return res.json({ success: false, message: 'Missing data' });
+
+    const tournament = await Tournament.findById(tournamentId);
+    if (!tournament || !tournament.expGiven)
+      return res.json({ success: false, message: 'No EXP yet' });
+
+    const players = await TournamentUser.find({ tournamentId }).sort({ balance: -1 });
+    const playerRank = players.findIndex(p => p.userId.toString() === userId.toString()) + 1;
+
+    if (playerRank === 0)
+      return res.json({ success: false, message: 'Player not found in this tournament' });
+
+    let expReward = 10;
+    if (playerRank === 1) expReward = 100;
+    else if (playerRank === 2) expReward = 50;
+    else if (playerRank === 3) expReward = 25;
+
+    res.json({
+      success: true,
+      username: req.session.user.username,
+      expReward,
+      rank: playerRank,
+      tournamentName: tournament.name
+    });
+  } catch (err) {
+    console.error('❌ exp-status error:', err);
+    res.json({ success: false, message: 'Server error' });
+  }
+});
+
 // ฟังก์ชันดึงราคาตลาดจาก backend (ใช้ axios)
 async function getMarketPrice(symbol) {
   try {
@@ -172,6 +211,53 @@ async function getMarketPrice(symbol) {
 
 // autoCloseWorker
 require('./services/orderWatcher');
+
+// ✅ อัปเดตสถานะเป็น END ถ้าเวลาหมด
+async function updateTournamentStatus() {
+  try {
+    const now = new Date();
+    const runningTournaments = await Tournament.find({
+      status: { $in: ['REGISTRATION', 'RUNNING'] }
+    });
+
+    for (const t of runningTournaments) {
+      console.log(`⏱ Checking tournament: ${t.name}`);
+      if (now >= t.end) {
+        t.status = 'END';
+        await t.save();
+        console.log(`🏁 Tournament "${t.name}" ended automatically.`);
+      }
+    }
+  } catch (err) {
+    console.error('❌ Error updating tournament status:', err);
+  }
+}
+
+// ✅ ตรวจ tournament ที่ END และยังไม่ได้แจก EXP
+async function checkEndedTournaments() {
+  try {
+    const endedTournaments = await Tournament.find({
+      status: 'END',
+      expGiven: { $ne: true }
+    });
+
+    for (const t of endedTournaments) {
+      console.log(`🎯 Found ended tournament: ${t.name}`);
+      await awardExpForTournament(t._id);
+      t.expGiven = true;
+      await t.save();
+      console.log(`✅ EXP awarded for ${t.name}`);
+    }
+  } catch (err) {
+    console.error('❌ Error checking ended tournaments:', err);
+  }
+}
+
+// ✅ รันทั้งคู่ทุก 10 วิ
+setInterval(async () => {
+  await updateTournamentStatus();
+  await checkEndedTournaments();
+}, 10000); // 10 seconds
 
 // Start server
 const PORT = process.env.PORT || 4000;

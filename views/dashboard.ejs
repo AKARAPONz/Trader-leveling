@@ -93,7 +93,8 @@
           <small>
             Level: <span id="userLevel"><%= user.level || 'N/A' %></span> | 
             EXP: <span id="userExp"><%= user.exp || 0 %></span> | 
-            Role: <span class="badge badge-<%= user.role === 'admin' ? 'danger' : user.role === 'trader' ? 'success' : 'secondary' %>"><%= user.role || 'Guest' %></span> | @<%= user.username || 'Guest' %> <br /> | 
+            Role: <span class="badge badge-<%= user.role === 'admin' ? 'danger' : user.role === 'trader' ? 'success' : 'secondary' %>"><%= user.role || 'Guest' %></span> | 
+            @<%= user.username || 'Guest' %> <br/>
             <%= new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %>
           </small>
         </div>
@@ -284,5 +285,35 @@
     });
   </script>
   <script src="/js/dashboard.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  async function checkTournamentExp() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tournamentId = urlParams.get('tournamentId');
+    if (!tournamentId) return;
+
+    try {
+      const res = await fetch(`/api/tournament-exp-status?tournamentId=${tournamentId}`);
+      const data = await res.json();
+      
+      if (data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: `🎯 ${data.username} ได้รับ +${data.expReward} EXP`,
+          text: `จาก ${data.tournamentName} (อันดับ ${data.rank})`,
+          confirmButtonText: 'เยี่ยมเลย!',
+          confirmButtonColor: '#0d6efd'
+        });
+
+      }
+    } catch (err) {
+      console.error('EXP Check failed:', err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', checkTournamentExp);
+</script>
+
 </body>
 </html>

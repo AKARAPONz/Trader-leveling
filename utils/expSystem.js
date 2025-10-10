@@ -132,19 +132,26 @@ async function getUserLevelInfo(userId) {
     const currentLevelInfo = LEVEL_REQUIREMENTS[level];
     const nextLevelExp = getExpForNextLevel(level);
 
-    const progressToNextLevel = nextLevelExp
-      ? ((user.exp - currentLevelInfo.exp) / nextLevelExp) * 100
-      : 100;
+const nextLevelInfo = LEVEL_REQUIREMENTS[level + 1];
+let progressToNextLevel = 100;
 
-    return {
-      success: true,
-      level: user.level,
-      exp: user.exp,
-      levelInfo: currentLevelInfo,
-      nextLevelExp,
-      progressToNextLevel: Math.min(progressToNextLevel, 100),
-      isMaxLevel: level >= 7 // ✅ เปลี่ยนจาก 6 → 7
-    };
+if (nextLevelInfo) {
+  const gainedExp = Math.max(user.exp - currentLevelInfo.exp, 0);
+  const requiredExpForNext = nextLevelInfo.exp - currentLevelInfo.exp;
+
+  progressToNextLevel = Math.min((gainedExp / requiredExpForNext) * 100, 100);
+}
+
+return {
+  success: true,
+  level: user.level,
+  exp: user.exp,
+  levelInfo: currentLevelInfo,
+  nextLevelExp,
+  progressToNextLevel: progressToNextLevel.toFixed(2),
+  isMaxLevel: level >= 7
+};
+
   } catch (error) {
     console.error('❌ Error getting user level info:', error);
     return { success: false, error: error.message };
