@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const User = require('../models/user');
+const User = require('../models/User');
 
 module.exports = async (req, res) => {
   const { identifier, password } = req.body; // identifier = email หรือ username

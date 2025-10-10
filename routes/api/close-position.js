@@ -1,10 +1,10 @@
 // routes/api/close-position.js
 const express = require('express');
 const router = express.Router();
-const OpenPosition = require('../../models/openPosition');
-const TradeLog = require('../../models/tradeLog');
+const OpenPosition = require('../../models/OpenPosition');
+const TradeLog = require('../../models/TradeLog');
 const axios = require('axios');
-const TournamentUser = require('../../models/tournamentUser');
+const TournamentUser = require('../../models/TournamentUser');
 
 router.post('/', async (req, res) => {
   try {

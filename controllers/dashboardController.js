@@ -1,8 +1,8 @@
-const Tournament = require('../models/tournament');
-const TournamentRequest = require('../models/tournamentRequest');
-const TournamentUser = require('../models/tournamentUser');
-const TradeLog = require('../models/tradeLog');
-const OpenPosition = require('../models/openPosition');
+const Tournament = require('../models/Tournament');
+const TournamentRequest = require('../models/TournamentRequest');
+const TournamentUser = require('../models/TournamentUser');
+const TradeLog = require('../models/TradeLog');
+const OpenPosition = require('../models/OpenPosition');
 
 // Dashboard Controller
 exports.getDashboardPage = async (req, res) => {

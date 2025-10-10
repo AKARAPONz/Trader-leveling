@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const Tournament = require('../../models/tournament');
-const TournamentRequest = require('../../models/tournamentRequest');
+const Tournament = require('../../models/Tournament');
+const TournamentRequest = require('../../models/TournamentRequest');
 const User = require('../../models/User');
 
 // ✅ POST /api/tournament-join - สมัครเข้าร่วม tournament

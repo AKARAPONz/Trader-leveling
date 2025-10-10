@@ -10,8 +10,8 @@ const path = require('path');
 const multer = require('multer');
 const http = require('http').createServer(app);           // ใช้ http server
 const io = require('socket.io')(http);                    // ใช้ socket.io
-const OpenPosition = require('./models/openPosition');
-const TradeLog = require('./models/tradeLog');
+const OpenPosition = require('./models/OpenPosition');
+const TradeLog = require('./models/TradeLog');
 const axios = require('axios');
 
 // ตั้งค่า multer สำหรับ multipart/form-data
