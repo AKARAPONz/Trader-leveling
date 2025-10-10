@@ -9,4 +9,4 @@ const TournamentSchema = new mongoose.Schema({
   expGiven: { type: Boolean, default: false }
 });
 
-module.exports = mongoose.model('Tournament', TournamentSchema);
+module.exports = mongoose.models.Tournament || mongoose.model('Tournament', TournamentSchema);

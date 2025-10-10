@@ -17,4 +17,4 @@ const tradeLogSchema = new mongoose.Schema({
   closedAt: Date          // ✅ เพิ่ม
 });
 
-module.exports = mongoose.model('TradeLog', tradeLogSchema);
+module.exports = mongoose.models.TradeLog || mongoose.model('TradeLog', tradeLogSchema);

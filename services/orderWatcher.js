@@ -1,7 +1,7 @@
 // services/orderWatcher.js
 const axios = require('axios');
 const OpenPosition = require('../models/OpenPosition');
-const TradeLog = require('../models/TradeLog');
+const TradeLog = require('../models/tradeLog');
 const TournamentUser = require('../models/TournamentUser');
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

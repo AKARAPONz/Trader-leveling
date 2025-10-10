@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const OpenPosition = require('../../models/OpenPosition');
-const TradeLog = require('../../models/TradeLog');
+const TradeLog = require('../../models/tradeLog');
 const axios = require('axios');
 const TournamentUser = require('../../models/TournamentUser');
 

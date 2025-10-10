@@ -1,7 +1,7 @@
 const Tournament = require('../models/Tournament');
 const TournamentRequest = require('../models/TournamentRequest');
 const TournamentUser = require('../models/TournamentUser');
-const TradeLog = require('../models/TradeLog');
+const TradeLog = require('../models/tradeLog');
 const OpenPosition = require('../models/OpenPosition');
 
 // Dashboard Controller

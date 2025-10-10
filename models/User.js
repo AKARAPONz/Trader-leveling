@@ -59,5 +59,4 @@ UserSchema.pre('save', function (next) {
     .catch(error => next(error));
 });
 
-// ✅ ป้องกัน OverwriteModelError
 module.exports = mongoose.models.User || mongoose.model('User', UserSchema);

@@ -12,4 +12,4 @@ const tournamentRequestSchema = new mongoose.Schema({
   processedAt: { type: Date }
 });
 
-module.exports = mongoose.model('TournamentRequest', tournamentRequestSchema);
+module.exports = mongoose.models.TournamentRequest || mongoose.model('TournamentRequest', tournamentRequestSchema);

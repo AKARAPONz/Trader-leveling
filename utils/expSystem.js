@@ -74,7 +74,7 @@ async function addExp(userId, expToAdd, reason = '') {
 // ✅ ตรวจสอบโบนัสเทรด 3 ครั้งต่อวัน
 async function checkDailyTradeBonus(userId) {
   try {
-    const TradeLog = require('../models/TradeLog');
+    const TradeLog = require('../models/tradeLog');
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 

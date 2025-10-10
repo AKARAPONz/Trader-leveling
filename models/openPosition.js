@@ -20,4 +20,4 @@ const openPositionSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }        // ✅ ใส่ default
 });
 
-module.exports = mongoose.model('OpenPosition', openPositionSchema);
+module.exports = mongoose.models.OpenPosition || mongoose.model('OpenPosition', openPositionSchema);

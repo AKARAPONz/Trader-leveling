@@ -11,26 +11,19 @@ const multer = require('multer');
 const http = require('http').createServer(app);           // ใช้ http server
 const io = require('socket.io')(http);                    // ใช้ socket.io
 const awardExpForTournament = require('./controllers/awardExpController');
-const Tournament = require('./models/Tournament');
-const TournamentUser = require('./models/TournamentUser');
-const OpenPosition = require('./models/OpenPosition');
-const TradeLog = require('./models/TradeLog');
+const Tournament = require('./models/tournament');
+const TournamentUser = require('./models/tournamentuser');
+const OpenPosition = require('./models/openposition');
+const TradeLog = require('./models/tradelog');
 const axios = require('axios');
 
 // ตั้งค่า multer สำหรับ multipart/form-data
 const upload = multer();
 
 // เชื่อมต่อ MongoDB
-mongoose.connect('mongodb+srv://admin:1234@cluster0.dczs0k3.mongodb.net/', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => {
-  console.log('✅ MongoDB connected successfully');
-})
-.catch((err) => {
-  console.error('❌ MongoDB connection error:', err);
-});
+mongoose.connect('mongodb+srv://admin:1234@cluster0.dczs0k3.mongodb.net/')
+  .then(() => console.log('✅ MongoDB connected successfully'))
+  .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // Event handler ของ mongoose
 mongoose.connection.on('connected', () => {

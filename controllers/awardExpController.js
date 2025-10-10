@@ -1,6 +1,6 @@
-const Tournament = require('../models/Tournament');
-const TournamentUser = require('../models/TournamentUser');
-const User = require('../models/User');
+const Tournament = require('../models/tournament');
+const TournamentUser = require('../models/tournamentUser');
+const User = require('../models/user');
 
 module.exports = async function awardExpForTournament(tournamentId) {
   try {
