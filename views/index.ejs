@@ -103,6 +103,7 @@
     <div class="content">
 
       <!-- User Level Info: แสดงระดับและ exp -->
+    <% if (user.role === 'admin' || user.role === 'trader') { %>
       <div class="card mb-4">
         <div class="card-header">
           <h5><i class="bi bi-star"></i> Level & Experience</h5>
@@ -126,6 +127,7 @@
           </div>
         </div>
       </div>
+    <% } %>
 
 <!-- Asset Selection: เลือกสินทรัพย์ -->
 <div class="card mb-4">

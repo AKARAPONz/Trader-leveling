@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const User = require('../models/user');
 
 // ระดับและ EXP ที่ต้องการ
 const LEVEL_REQUIREMENTS = {

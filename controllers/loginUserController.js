@@ -1,8 +1,8 @@
 const bcrypt = require('bcryptjs');
-const User = require('../models/User');
+const User = require('../models/user');
 
 module.exports = async (req, res) => {
-  const { identifier, password } = req.body; // ✅ ใช้ identifier (อาจเป็น email หรือ username)
+  const { identifier, password } = req.body; // identifier = email หรือ username
 
   try {
     // ✅ หาผู้ใช้จาก username หรือ email
@@ -28,6 +28,12 @@ module.exports = async (req, res) => {
       });
     }
 
+ //   // ✅ ตรวจสอบว่าผู้ใช้ยืนยันอีเมลแล้วหรือยัง
+ //   if (!user.verified) {
+ //     req.flash('error', 'กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ');
+ //     return res.redirect('/login');
+ //   }
+
     // ✅ บันทึกข้อมูลผู้ใช้ใน session
     req.session.userId = user._id;
     req.session.user = {
@@ -43,7 +49,7 @@ module.exports = async (req, res) => {
     };
 
     console.log(`✅ User logged in: ${user.username} (${user.email})`);
-    return res.redirect('/'); // หรือเปลี่ยนเป็น '/dashboard'
+    return res.redirect('/'); // หรือ '/dashboard'
 
   } catch (err) {
     console.error('❌ Login error:', err);

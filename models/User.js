@@ -6,12 +6,12 @@ const UserSchema = new Schema({
   email: {
     type: String,
     required: [true, 'Please provide email'],
-    unique: true // ✅ ห้าม email ซ้ำ
+    unique: true
   },
   username: {
     type: String,
     required: [true, 'Please provide username'],
-    unique: true // ✅ ห้าม username ซ้ำ
+    unique: true
   },
   password: {
     type: String,
@@ -40,21 +40,24 @@ const UserSchema = new Schema({
   role: {
     type: String,
     enum: ['admin', 'trader', 'guest'],
-    default: 'trader' // ✅ สมัครใหม่เป็น Trader อัตโนมัติ
-  }
+    default: 'trader'
+  },
+  //verified: { type: Boolean, default: false },
+  //verifyToken: { type: String },
+  //verifyExpires: { type: Date }
 });
 
 // ✅ เข้ารหัสรหัสผ่านก่อนบันทึก
 UserSchema.pre('save', function (next) {
-  const user = this;
-  if (!user.isModified('password')) return next();
+  if (!this.isModified('password')) return next();
 
-  bcrypt.hash(user.password, 10)
+  bcrypt.hash(this.password, 10)
     .then(hash => {
-      user.password = hash;
+      this.password = hash;
       next();
     })
     .catch(error => next(error));
 });
 
-module.exports = mongoose.model('User', UserSchema);
+// ✅ ป้องกัน OverwriteModelError
+module.exports = mongoose.models.User || mongoose.model('User', UserSchema);

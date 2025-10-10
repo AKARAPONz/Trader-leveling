@@ -1,60 +1,66 @@
-const User = require('../models/User');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+const User = require('../models/user');
 
 module.exports = async (req, res) => {
   try {
     const { email, username, password, age, country } = req.body;
 
-    // ✅ ตรวจซ้ำก่อนบันทึก
-    const existingUser = await User.findOne({
-      $or: [{ email }, { username }]
-    });
-
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
-      let duplicateField = '';
-      if (existingUser.email === email) duplicateField = 'อีเมลนี้ถูกใช้แล้ว';
-      else if (existingUser.username === username) duplicateField = 'ชื่อผู้ใช้นี้ถูกใช้แล้ว';
-
-      req.flash('validationErrors', [duplicateField]);
-      req.flash('data', req.body);
-      console.warn(`⚠️ Duplicate detected: ${duplicateField}`);
+      req.flash('validationErrors', ['อีเมลหรือชื่อผู้ใช้นี้ถูกใช้แล้ว']);
       return res.redirect('/register');
     }
 
-    // ✅ ถ้าไม่ซ้ำ → สร้าง user ใหม่
+    // ✅ สร้าง token สำหรับ verify
+    const token = crypto.randomBytes(32).toString('hex');
+    const tokenExpires = Date.now() + 24 * 60 * 60 * 1000; // หมดอายุ 24 ชม.
+
+    // ✅ สร้าง user ใหม่
     const newUser = new User({
       email,
       username,
       password,
       age,
       country,
-      role: 'trader', // สมัครใหม่เป็น Trader อัตโนมัติ
-      level: 1
+      role: 'trader',
+      level: 1,
+      verified: false,
+      verifyToken: token,
+      verifyExpires: tokenExpires
     });
-
     await newUser.save();
-    console.log(`✅ User registered successfully: ${username} (${email})`);
 
-    req.flash('success', 'สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
-    res.redirect('/login');
+    // ✅ สร้าง transporter (ใช้ Gmail)
+//    const transporter = nodemailer.createTransport({
+//      service: 'gmail',
+//      auth: {
+//        user: process.env.SMTP_USER,
+//        pass: process.env.SMTP_PASS
+//      }
+//    });
+
+    // ✅ สร้างลิงก์ verify
+//    const verifyLink = `http://localhost:4000/verify?token=${token}`;
+
+    // ✅ ส่งอีเมล
+//    await transporter.sendMail({
+//      from: `"Trader Leveling" <${process.env.SMTP_USER}>`,
+//      to: email,
+//      subject: 'ยืนยันอีเมลของคุณ',
+//      html: `
+//        <h3>สวัสดี ${username}</h3>
+//        <p>กรุณาคลิกลิงก์ด้านล่างเพื่อยืนยันอีเมลของคุณ:</p>
+//       <a href="${verifyLink}" style="background:#0d6efd;color:white;padding:10px 15px;border-radius:6px;text-decoration:none;">ยืนยันอีเมล</a>
+//        <p>ลิงก์นี้จะหมดอายุภายใน 24 ชั่วโมง</p>
+//      `
+//    });
+
+    req.flash('success', 'สมัครสมาชิกสำเร็จ! โปรดยืนยันอีเมลของคุณ');
+    res.redirect('/register');
   } catch (error) {
     console.error('❌ storeUserController error:', error);
-    let validationErrors = [];
-
-    if (error.code === 11000) {
-      // MongoDB duplicate index
-      const key = Object.keys(error.keyValue)[0];
-      if (key === 'email') validationErrors = ['อีเมลนี้ถูกใช้แล้ว'];
-      else if (key === 'username') validationErrors = ['ชื่อผู้ใช้นี้ถูกใช้แล้ว'];
-      else validationErrors = ['ข้อมูลซ้ำในระบบ'];
-    } else if (error.errors) {
-      validationErrors = Object.values(error.errors).map(e => e.message);
-    } else {
-      validationErrors = [error.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'];
-    }
-
-    req.flash('validationErrors', [duplicateField]); // เมื่อข้อมูลซ้ำ
-    req.flash('success', 'สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ'); // เมื่อสมัครสำเร็จ
+    req.flash('validationErrors', ['เกิดข้อผิดพลาดในการสมัคร']);
     res.redirect('/register');
-
   }
 };
