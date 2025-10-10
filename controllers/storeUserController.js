@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
-const User = require('../models/User');
+const User = require('../models/user')
 
 module.exports = async (req, res) => {
   try {
