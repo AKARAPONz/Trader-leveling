@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const Tournament = require('../../models/Tournament');
-const TournamentRequest = require('../../models/TournamentRequest');
-const User = require('../../models/User');
+const Tournament = require('../../models/tournament');
+const TournamentRequest = require('../../models/tournamentrequest');
+const User = require('../../models/user');
 
 // ✅ POST /api/tournament-join - สมัครเข้าร่วม tournament
 router.post('/join', async (req, res) => {

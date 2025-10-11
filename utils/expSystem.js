@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const User = require('../models/user');
 
 // ระดับและ EXP ที่ต้องการ
 const LEVEL_REQUIREMENTS = {
@@ -74,7 +74,7 @@ async function addExp(userId, expToAdd, reason = '') {
 // ✅ ตรวจสอบโบนัสเทรด 3 ครั้งต่อวัน
 async function checkDailyTradeBonus(userId) {
   try {
-    const TradeLog = require('../models/tradeLog');
+    const TradeLog = require('../models/tradelog');
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 

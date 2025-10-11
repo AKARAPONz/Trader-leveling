@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const TournamentRequest = require('../../models/TournamentRequest');
+const TournamentRequest = require('../../models/tournamentrequest');
 
 // ✅ Kick ผู้เล่นออกจาก Tournament
 router.post('/kick', async (req, res) => {

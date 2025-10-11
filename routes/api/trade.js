@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const OpenPosition = require('../../models/OpenPosition');
-const TradeLog = require('../../models/tradeLog');
-const TournamentUser = require('../../models/TournamentUser');
-const Tournament = require('../../models/Tournament');
+const OpenPosition = require('../../models/openposition');
+const TradeLog = require('../../models/tradelog');
+const TournamentUser = require('../../models/tournamentuser');
+const Tournament = require('../../models/tournament');
 const axios = require('axios');
 
 // ✅ เปิดออเดอร์ใหม่

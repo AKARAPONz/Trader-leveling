@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const TournamentRequest = require('../../models/TournamentRequest');
+const TournamentRequest = require('../../models/tournamentrequest');
 
 // POST /join
 router.post('/join', async (req, res) => {
