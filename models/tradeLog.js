@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
-const tradeLogSchema = new mongoose.Schema({
-  tournamentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tournament' },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+const tradelogSchema = new mongoose.Schema({
+  tournamentId: { type: mongoose.Schema.Types.ObjectId, ref: 'tournament' },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
   symbol: String,
   action: String,         // buy / sell / close-buy / close-sell
   type: String,           // market / limit
@@ -17,4 +17,4 @@ const tradeLogSchema = new mongoose.Schema({
   closedAt: Date          // ✅ เพิ่ม
 });
 
-module.exports = mongoose.models.TradeLog || mongoose.model('TradeLog', tradeLogSchema);
+module.exports = mongoose.models.tradelog || mongoose.model('tradelog', tradelogSchema);

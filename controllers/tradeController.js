@@ -1,7 +1,7 @@
-const Tournament = require('../models/Tournament');
-const TournamentRequest = require('../models/TournamentRequest');
-const TradeLog = require('../models/tradeLog');
-const TournamentUser = require('../models/TournamentUser');
+const Tournament = require('../models/tournament');
+const TournamentRequest = require('../models/tournamentrequest');
+const TradeLog = require('../models/tradelog');
+const TournamentUser = require('../models/tournamentuser');
 
 exports.getTradePage = async (req, res) => {
   try {

@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
-const tournamentRequestSchema = new mongoose.Schema({
-  tournamentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tournament' },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+const tournamentrequestSchema = new mongoose.Schema({
+  tournamentId: { type: mongoose.Schema.Types.ObjectId, ref: 'tournament' },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
   status: {
     type: String,
     enum: ['pending', 'accepted', 'rejected', 'removed'],
@@ -12,4 +12,4 @@ const tournamentRequestSchema = new mongoose.Schema({
   processedAt: { type: Date }
 });
 
-module.exports = mongoose.models.TournamentRequest || mongoose.model('TournamentRequest', tournamentRequestSchema);
+module.exports = mongoose.models.tournamentrequest || mongoose.model('tournamentrequest', tournamentrequestSchema);

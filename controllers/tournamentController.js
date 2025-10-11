@@ -1,4 +1,4 @@
-const Tournament = require('../models/Tournament');
+const Tournament = require('../models/tournament');
 
 // ✅ สร้าง Tournament ใหม่
 exports.createTournament = async (req, res) => {

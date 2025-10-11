@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const bcrypt = require('bcryptjs');
 
-const UserSchema = new Schema({
+const userSchema = new Schema({
   email: {
     type: String,
     required: [true, 'Please provide email'],
@@ -48,7 +48,7 @@ const UserSchema = new Schema({
 });
 
 // ✅ เข้ารหัสรหัสผ่านก่อนบันทึก
-UserSchema.pre('save', function (next) {
+userSchema.pre('save', function (next) {
   if (!this.isModified('password')) return next();
 
   bcrypt.hash(this.password, 10)
@@ -59,4 +59,4 @@ UserSchema.pre('save', function (next) {
     .catch(error => next(error));
 });
 
-module.exports = mongoose.models.User || mongoose.model('User', UserSchema);
+module.exports = mongoose.models.user || mongoose.model('user', userSchema);

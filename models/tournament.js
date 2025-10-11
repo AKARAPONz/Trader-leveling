@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const TournamentSchema = new mongoose.Schema({
+const tournamentSchema = new mongoose.Schema({
   name: { type: String, required: true },
   balance: { type: Number, required: true },
   start: { type: Date, required: true },
@@ -9,4 +9,4 @@ const TournamentSchema = new mongoose.Schema({
   expGiven: { type: Boolean, default: false }
 });
 
-module.exports = mongoose.models.Tournament || mongoose.model('Tournament', TournamentSchema);
+module.exports = mongoose.models.tournament || mongoose.model('tournament', tournamentSchema);

@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
-const openPositionSchema = new mongoose.Schema({
-  tournamentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tournament', required: true },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+const openpositionSchema = new mongoose.Schema({
+  tournamentId: { type: mongoose.Schema.Types.ObjectId, ref: 'tournament', required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
 
   symbol: { type: String, required: true },          // ✅ เช่น BTCUSDT
   action: { type: String, enum: ['buy', 'sell'], required: true },
@@ -20,4 +20,4 @@ const openPositionSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }        // ✅ ใส่ default
 });
 
-module.exports = mongoose.models.OpenPosition || mongoose.model('OpenPosition', openPositionSchema);
+module.exports = mongoose.models.openposition || mongoose.model('openposition', openpositionSchema);
