@@ -148,12 +148,18 @@
                   <td>$<%= Number(t.balance).toLocaleString() %></td>
                   <td><%= t.join %></td>
                   <td style="white-space:nowrap;">
-                    <%= start.toLocaleString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'}) %>
-                    <br><span style="font-size:0.9em;color:#888;">(Indonesia Time Zone)</span>
+                    <div><%= start.toLocaleString('en-GB', {
+                      weekday: 'short', day: '2-digit', month: 'short',
+                      year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'
+                    }) %></div>
+                    <small class="text-muted">(Indochina Time GMT+7)</small>
                   </td>
                   <td style="white-space:nowrap;">
-                    <%= end.toLocaleString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'}) %>
-                    <br><span style="font-size:0.9em;color:#888;">(Indonesia Time Zone)</span>
+                    <div><%= end.toLocaleString('en-GB', {
+                      weekday: 'short', day: '2-digit', month: 'short',
+                      year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'
+                    }) %></div>
+                    <small class="text-muted">(Indochina Time GMT+7)</small>
                   </td>
                   <td>
                     <% if (t.status === 'END') { %>
