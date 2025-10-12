@@ -857,3 +857,40 @@ p {
     padding: 4px 8px;
   }
 }
+
+/* ===== FIX: Prevent overflow on Render / small screens ===== */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.main, .content, .card, .card-body {
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* ปุ่ม Crypto ให้ wrap และไม่ล้นขอบ */
+.crypto-buttons,
+.crypto-list,
+.crypto-options,
+.d-flex.flex-wrap {
+  flex-wrap: wrap !important;
+  justify-content: center;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+@media (max-width: 992px) {
+  .content {
+    padding: 1rem;
+  }
+
+  .card-body {
+    padding: 1rem;
+  }
+
+  #dynamic-graph {
+    height: 350px !important;
+  }
+}
