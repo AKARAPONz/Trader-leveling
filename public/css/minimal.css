@@ -870,16 +870,6 @@ html, body {
   box-sizing: border-box;
 }
 
-/* ปุ่ม Crypto ให้ wrap และไม่ล้นขอบ */
-.crypto-buttons,
-.crypto-list,
-.crypto-options,
-.d-flex.flex-wrap {
-  flex-wrap: wrap !important;
-  justify-content: center;
-  overflow-x: hidden;
-  max-width: 100%;
-}
 
 @media (max-width: 992px) {
   .content {

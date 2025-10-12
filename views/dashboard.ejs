@@ -220,16 +220,15 @@
                 </thead>
                 <tbody>
                   <% leaderboard.forEach(function(entry, idx) { %>
-                    <tr<%= entry._id.toString() === user._id.toString() ? ' class="table-success"' : '' %>>
-                      <td><%= idx + 1 %></td>
-                      <td>
-                        <%= entry.userId && entry.userId.username ? entry.userId.username : 'N/A' %>
-                      </td>
-                      <td>
-                        <td><%= entry.score ? Number(entry.score).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '0.00' %></td>
-                      </td>
-                    </tr>
+                  <tr <%= entry.userId && user && entry.userId._id.toString() === user._id.toString() ? 'class="table-success"' : '' %>>
+                  <td><%= idx + 1 %></td>
+                  <td><%= entry.userId?.username || 'N/A' %></td>
+                  <td><%= (entry.score !== undefined && entry.score !== null)
+                    ? Number(entry.score).toLocaleString('en-US', { minimumFractionDigits: 2 })
+                    : '0.00' %></td>
+                  </tr>
                   <% }) %>
+
                   <!-- แสดงคะแนนรวมของคุณ -->
                   <tr class="table-info">
                     <td colspan="2"><strong>คะแนนรวมของคุณ</strong></td>
