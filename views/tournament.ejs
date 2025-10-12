@@ -174,26 +174,38 @@
                   </td>
                   <td><%= when %></td>
                   <td>
+                  <div class="action-buttons">
                     <a href="/dashboard?tournamentId=<%= t._id %>" class="btn btn-outline btn-sm">Dashboard</a>
-                    <% if (t.status === 'RUNNING' && (user.role === 'trader' || user.role === 'admin')) { %>
-                      <a href="/trade?tournamentId=<%= t._id %>" class="btn btn-primary btn-sm">Trade</a>
+
+                      <% if (t.status === 'RUNNING' && (user.role === 'trader' || user.role === 'admin')) { %>
+                    <a href="/trade?tournamentId=<%= t._id %>" class="btn btn-primary btn-sm">Trade</a>
                     <% } %>
+
                     <% if ((t.status === 'REGISTRATION' || t.status === 'RUNNING') && (user.role === 'trader' || user.role === 'admin')) { %>
                       <button class="btn btn-success btn-sm" onclick="joinTournament('<%= t._id %>')" id="joinBtn-<%= t._id %>">
                         <i class="bi bi-person-plus"></i> Join
                       </button>
                       <span id="joinStatus-<%= t._id %>" class="badge badge-secondary" style="display:none;">Loading...</span>
                     <% } %>
+
                     <% if (user.role === 'admin') { %>
-                      <% if (t.status !== 'END') { %>
-                        <button class="btn btn-secondary btn-sm" onclick="openEditModal('<%= t._id %>', '<%= t.name %>', '<%= t.balance %>', '<%= t.join %>', '<%= t.start %>', '<%= t.end %>')">Edit</button>
-                        <button class="btn btn-info btn-sm" onclick="viewRequests('<%= t._id %>')">Requests</button>
-                      <% } %>
-                      <form method="POST" action="/tournament/delete/<%= t._id %>" style="display:inline">
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this tournament?')">Delete</button>
-                      </form>
+                    <% if (t.status !== 'END') { %>
+                      <button class="btn btn-secondary btn-sm" onclick="openEditModal('<%= t._id %>', '<%= t.name %>', '<%= t.balance %>', '<%= t.join %>', '<%= t.start %>', '<%= t.end %>')">
+                        <i class="bi bi-pencil-square"></i> Edit
+                      </button>
+                      <button class="btn btn-info btn-sm" onclick="viewRequests('<%= t._id %>')">
+                        <i class="bi bi-envelope"></i> Requests
+                      </button>
                     <% } %>
-                  </td>
+                    <form method="POST" action="/tournament/delete/<%= t._id %>" style="display:inline">
+                      <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this tournament?')">
+                        <i class="bi bi-trash"></i> Delete
+                      </button>
+                    </form>
+                    <% } %>
+                  </div>
+                </td>
+
                 </tr>
                 <% } %>
               </tbody>
