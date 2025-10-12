@@ -30,7 +30,8 @@
 <body data-has-tournament="<%= tournament ? 'true' : 'false' %>" 
       data-tournament-id="<%= tournament ? tournament._id : '' %>">
 
-  <!-- Sidebar -->
+  <!-- Sidebar: เมนูด้านข้าง -->
+  <div class="sidebar-trigger"></div>
   <div class="sidebar">
     <div class="sidebar-header">
       <a href="/" class="brand"><i class="bi bi-graph-up-arrow"></i> Trader Leveling</a>
@@ -49,9 +50,6 @@
       <div class="auth-buttons">
         <% if (loggedIn) { %>
           <a href="/logout" class="btn btn-primary"><i class="bi bi-box-arrow-right"></i> Logout</a>
-        <% } else { %>
-          <a href="/login" class="btn btn-primary"><i class="bi bi-box-arrow-in-right"></i> Sign In</a>
-          <a href="/register" class="btn btn-primary"><i class="bi bi-person-plus"></i> Sign Up</a>
         <% } %>
       </div>
     </div>

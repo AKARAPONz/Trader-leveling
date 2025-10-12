@@ -71,22 +71,6 @@ p {
   color: var(--text-secondary);
 }
 
-/* Layout Components */
-.sidebar {
-  width: 280px;
-  height: 100vh;
-  background: var(--bg-primary);
-  border-right: 1px solid var(--border-color);
-  position: fixed;
-  left: 0;
-  top: 0;
-  display: flex;
-  flex-direction: column;
-  z-index: 1000;
-  transition: none;
-  transform: none; /* Always visible */
-}
-
 .sidebar::before {
   display: none;
 }
@@ -903,4 +887,48 @@ html, body {
   .action-buttons {
     justify-content: center;
   }
+}
+
+/* ===== Sidebar Auto-Hide Hover ===== */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 240px;
+  height: 100vh;
+  background: #fff;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
+  transform: translateX(-240px); /* ซ่อนทั้งหมด */
+  transition: transform 0.35s ease;
+  z-index: 1050;
+}
+
+/* พอ hover ที่ trigger หรือ sidebar เองให้โผล่ */
+.sidebar-trigger:hover + .sidebar,
+.sidebar:hover {
+  transform: translateX(0);
+}
+
+/* trigger zone ด้านซ้ายสุดของจอ */
+.sidebar-trigger {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 12px; /* ขอบเล็กๆ สำหรับชี้เมาส์ */
+  height: 100vh;
+  background: transparent;
+  z-index: 1049;
+  cursor: ew-resize;
+}
+
+/* ให้เนื้อหาไม่ขยับตอน sidebar โผล่ */
+.main {
+  margin-left: 0 !important;
+  transition: margin-left 0.3s ease;
+}
+
+/* เอฟเฟกต์เงาสวย ๆ ตอน hover */
+.sidebar:hover {
+  box-shadow: 5px 0 12px rgba(0, 0, 0, 0.15);
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
 }
