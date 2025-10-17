@@ -88,4 +88,17 @@ router.post('/', async (req, res) => {
   }
 });
 
+async function getSafePrice(symbol, entryPrice) {
+  try {
+    const res = await fetch(`/api/price?symbol=${symbol}`);
+    const data = await res.json();
+    if (data && data.success && data.price) return parseFloat(data.price);
+    console.warn('⚠️ Invalid price data, using entry price fallback');
+    return entryPrice;
+  } catch (err) {
+    console.error('❌ Price API error, fallback to entry price:', err.message);
+    return entryPrice;
+  }
+}
+
 module.exports = router;

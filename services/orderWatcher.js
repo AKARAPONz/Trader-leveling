@@ -14,7 +14,7 @@ async function checkPositions() {
     console.log(`🔍 Checking ${openPositions.length} open positions...`);
 
     // ✅ ดึงราคาทั้งหมดจาก Binance ทีเดียว (เร็วมาก)
-    const { data: allPrices } = await axios.get('https://api.binance.com/api/v3/ticker/price');
+    const { data: allPrices } = await axios.get('http://localhost:4000/api/allprices');
 
     for (const pos of openPositions) {
       try {

@@ -637,32 +637,39 @@ async function updateRealtimePnL() {
     const percent = Math.min(100, Math.max(1, (amount / closeCurrentLot) * 100));
     document.getElementById('closePercent').value = percent.toFixed(0);
   }
-  async function saveClosePosition() {
-    await refreshPrice();
-    const closePrice = lastPrice;
-    if (!closePositionId || !closePrice) return alert('Missing position or price');
-    const lotToClose = parseFloat(document.getElementById('closeAmount').value);
-    if (!lotToClose || lotToClose <= 0) return alert('Invalid close amount');
-    try {
-      const res = await fetch('/api/close-position', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ positionId: closePositionId, lotToClose })
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert(`✅ Position closed!\nPnL: ${data.pnl}\nScore: ${data.score}`);
-        closeCloseModal();
-        loadOpenPositions();
-        loadRecentTrades();
-        refreshBalance();
-      } else {
-        alert('Error: ' + (data.error || 'Close failed'));
-      }
-    } catch (err) {
-      alert('Error closing position: ' + err.message);
-    }
+async function saveClosePosition() {
+  await refreshPrice();
+  let closePrice = lastPrice;
+  if (!closePrice || closePrice === 0) {
+    console.warn('⚠️ Price API failed, using entry price as fallback');
+    const pos = await fetch(`/api/trade/positions?tournamentId=${document.body.dataset.tournamentId}`)
+      .then(res => res.json());
+    const found = pos.positions.find(p => p._id === closePositionId);
+    if (found) closePrice = found.entryPrice;
   }
+
+  const lotToClose = parseFloat(document.getElementById('closeAmount').value);
+  if (!closePositionId || !lotToClose || lotToClose <= 0)
+    return alert('Invalid close data');
+
+  try {
+    const res = await fetch('/api/close-position', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ positionId: closePositionId, lotToClose, closePrice })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(`✅ Closed!\nPnL: ${data.pnl}\nScore: ${data.score}`);
+      closeCloseModal();
+      loadOpenPositions();
+      loadRecentTrades();
+      refreshBalance();
+    } else alert('❌ ' + data.error);
+  } catch (err) {
+    alert('❌ Close error: ' + err.message);
+  }
+}
   // ✅ เริ่มอัปเดตกำไร/ขาดทุนเรียลไทม์ทุก 1 วินาที
   setInterval(updateRealtimePnL,1000);
 </script>
